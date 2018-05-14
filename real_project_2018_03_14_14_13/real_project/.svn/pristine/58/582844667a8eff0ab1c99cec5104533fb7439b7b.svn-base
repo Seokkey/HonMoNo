@@ -1,0 +1,227 @@
+package com.project.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dto.BoardDto;
+import com.project.dto.PhotoDto;
+import com.project.dto.ReplyDto;
+import com.project.useClass.estimatePaging;
+import com.sun.javafx.collections.MappingChange.Map;
+
+@Service
+public class EstiBoardService {
+
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private HttpSession session;
+	@Autowired
+	private HttpServletRequest request;		
+	
+	private ModelAndView mav;
+	
+	
+	
+	
+	public ModelAndView estiBoardList() {
+		System.out.println("서비스: 견적문의 리스트 불러오기");
+		mav=new ModelAndView();	
+		List<BoardDto> blist=null;		
+		String c_idx = request.getParameter("c_idx");
+		String area = request.getParameter("area");
+		String furnitureCategory = request.getParameter("furnitureCategory");
+		String keyword = request.getParameter("keyword");
+		String searchtxt = request.getParameter("searchtxt");
+		String c_num = request.getParameter("c_num");
+				
+		System.out.println("파라미터로 받아온 idx:"+c_idx);
+		System.out.println("파라미터로 받아온 area:"+area);
+		System.out.println("파라미터로 받아온 furnitureCategory:"+furnitureCategory);
+		System.out.println("파라미터로 받아온 keyword:"+keyword);
+		System.out.println("파라미터로 받아온 searchtxt:"+searchtxt);
+		System.out.println("파라미터로 받아온 대분류번호:"+c_num);
+		
+		//pagenum 이 널이 아니면 앞에 널이면 뒤에
+		int pageNum=(request.getParameter("pageNum")!=null) 
+				? Integer.parseInt(request.getParameter("pageNum")) : 1;	
+				System.out.println("pageNum="+pageNum);
+		
+				//검색이 아닐 때 
+		if(area==null  && furnitureCategory==null && keyword==null   && searchtxt==null) {
+				System.out.println("검색 아님");
+				
+				HashMap<String, Integer> map = new HashMap<String, Integer>();
+				map.put("c_idx", Integer.parseInt(c_idx));
+				map.put("pageNum", pageNum);
+				blist=bDao.estiBoardList(map);
+				
+				String blistHtml=makeHtmtBlist(blist);								
+				
+				mav.addObject("blist", blistHtml);
+				mav.addObject("paging",getPaging(pageNum,c_num,c_idx,area,furnitureCategory,keyword,searchtxt));
+				
+		}else {//게시판 번호 넘겨야함
+			System.out.println("검색 중");
+			System.out.println(pageNum);
+			System.out.println(c_idx);
+			System.out.println("지역 :"+ area);
+			System.out.println("제품 분류 :"+furnitureCategory);
+			System.out.println("키워드 :"+keyword);
+			System.out.println("텍스트 :"+searchtxt);
+			
+			HashMap<String, String> map = new HashMap<String, String>();
+		    map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+			map.put("c_idx", c_idx); // 게시판 이름*/		   
+		    map.put("area", area); // 지역
+		    map.put("furnitureCategory", furnitureCategory); // 가구분류
+		    map.put("keyword", keyword); //검색 키워드 = writer / sub / subcon
+		    map.put("searchtxt", searchtxt); //String 검색글씨		    		    
+		    System.out.println(map.size());
+		    System.out.println("페이지번호:"+map.get("pageNum"));
+		    System.out.println("검색지역 : "+map.get("area"));
+		    System.out.println("가구분류 : "+map.get("furnitureCategory"));
+		    System.out.println("검색키워드 : "+map.get("keyword"));
+		    System.out.println("검색내용 : "+map.get("searchtxt"));
+		    System.out.println("게시판 인덱스 : "+map.get("c_idx"));
+		    blist=bDao.estiBoardSerchList(map);
+			
+		    String blistHtml=makeHtmtBlist(blist);						
+		    
+			mav.addObject("blist", blistHtml);
+			mav.addObject("paging",getPaging(pageNum,c_num,c_idx,area,furnitureCategory,keyword,searchtxt));
+			
+		}		
+		mav.addObject("boardName", bDao.estiBoardName(c_idx));
+		mav.setViewName("estimate/estimateList");
+		
+		return mav;
+	}
+	
+	// 페이징
+	private String getPaging(int pageNum,String c_num,String c_idx, String area,String furnitureCategory, String keyword, String searchtxt) { //현재 페이지 번호
+		System.out.println("페이징 메소드 실행");
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/		
+		map.put("c_idx", c_idx); // 게시판 idx 		   
+	    map.put("area", area); // 지역
+	    map.put("furnitureCategory", furnitureCategory); // 가구분류
+	    map.put("keyword", keyword); //검색 키워드 = writer / sub / subcon
+	    map.put("searchtxt", searchtxt); //String 검색글씨	
+		
+	    int maxNum=bDao.estiBoardCount(map); //게시글 총 갯수	
+		
+		int listCount=10; //한페이지의 글의 개수
+		int pageCount=5;  //한 그룹당 페이지 수
+		String boardUrl="listCall"; //페이징 처리해서 보낼 URL
+		estimatePaging paging = new estimatePaging(c_num,c_idx,maxNum,pageNum,listCount,pageCount,boardUrl,area,furnitureCategory,keyword,searchtxt);
+		return paging.makeHtmlPaging();
+	}
+	
+	//뷰 페이지에 리스트 출력 - 제목옆에 댓글 수 달기
+	private String makeHtmtBlist(List<BoardDto> blist) {
+		System.out.println("게시글 html 출력 메소드");		
+		StringBuilder sb=new StringBuilder();			
+		if(blist.size()>0) {			
+			for(int i=0;i<blist.size();i++){
+				sb.append("<tr>");
+				sb.append("<td>"+blist.get(i).getB_idx()+"</td>");
+				sb.append("<td>"+blist.get(i).getEm_product()+"</td>");
+				sb.append("<td>"
+						+ "<a href='./estiDetail?b_idx="+blist.get(i).getB_idx()+"'>"+blist.get(i).getB_subject()+"["+blist.get(i).getRcount()+"]</a></td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_nick()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getEm_date()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getD_area()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_date()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_hit()+"</td></tr>");
+			}
+		}else{
+			sb.append("<tr><td>등록된 게시물이 없습니다.</td></tr>");						
+		}
+		
+		return sb.toString();
+	}
+
+	//견적문의 글쓰기 폼 불러오기 메소드
+	public ModelAndView estiWriteForm() {
+		//게시판 이름 가져와야함
+		mav=new ModelAndView();		
+		mav.setViewName("estimate/estimateWriteFrom");
+		return mav;
+	}
+
+	//견적문의 게시글 등록 메소드
+	public ModelAndView estiBoardWrite(BoardDto board, MultipartFile[] b_files) throws IOException{
+		//System.out.println("check="+board.getFileChk());
+				String root=request.getSession().getServletContext().getRealPath("/");
+				String uploadPath=root+"resources/upload/";
+				//2.폴더 생성을 꼭 할것...
+				File dir=new File(uploadPath);
+				if(!dir.isDirectory()){  //upload폴더 없다면
+					dir.mkdir();  //upload폴더 생성
+				}
+				PhotoDto photo=null;
+				List<PhotoDto> aList=new ArrayList<PhotoDto>();
+				for(MultipartFile file:b_files) {
+					String oriFileName = file.getOriginalFilename();
+					// 저장할 파일이름
+					String sysFileName = System.currentTimeMillis() + "-" + oriFileName;
+					File dest = new File(uploadPath, sysFileName);
+					FileCopyUtils.copy(file.getBytes(), dest); //실질적 업로드
+					photo=new PhotoDto();
+					photo.setP_oriname(oriFileName);
+					photo.setP_newname(sysFileName);
+					bDao.fileInsert(photo);
+					//aList.add(attach);
+					//attach.getBf_oriname().add(oriFileName);
+					//attach.getBf_sysname().add(savedFileName);
+				}
+				/*List<String> oriList=attach.getBf_oriname();
+				for(int i=0;i<oriList.size();i++){
+					System.out.println("attach-oriName="+attach.getBf_oriname().get(i));
+					System.out.println("attach-sysName="+attach.getBf_sysname().get(i));
+				}*/
+				
+				return null;
+			}
+	
+	//견적문의 게시글 상세보기 메소드
+	public ModelAndView estiDetail() {
+		System.out.println("견적문의 상세보기 메소드");		
+		mav=new ModelAndView();		
+		
+		int b_idx = Integer.parseInt(request.getParameter("b_idx"));
+		System.out.println("인덱스번호:"+b_idx);		
+		mav.addObject("board", bDao.estiDetail(b_idx));
+		
+		List<ReplyDto> rlist=bDao.estiReplyList(b_idx);
+		System.out.println("댓글개수:"+rlist.size());
+		//System.out.println("1="+rlist.get(0).getR_contents());
+		
+		List<PhotoDto> photoList=bDao.estiPhotoList(b_idx);
+		
+		if(photoList.size()!=0){
+			mav.addObject("photo", photoList);
+		}
+		
+		mav.addObject("reply", rlist);
+		
+		mav.setViewName("estimate/estimateDeatil");
+		return mav;
+	}		
+	
+	
+}

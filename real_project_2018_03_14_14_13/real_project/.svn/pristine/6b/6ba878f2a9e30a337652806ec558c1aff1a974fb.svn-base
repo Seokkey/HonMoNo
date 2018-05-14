@@ -1,0 +1,237 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html>
+	<head>
+	<title>Insert title here</title>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script src="http://minimar0.dothome.co.kr/js/jquery.simple-sidebar.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<style>
+		*{
+            margin:0; 
+            padding:0;
+        }
+        ul,ol,li {
+            list-style-type:none
+        }
+        a {
+            font-size:12px; 
+            text-decoration:none
+        }
+        h1 a {
+            display:block;
+            font:17px/50px NGBold; 
+            color:#fff; 
+            text-align:center;
+        }
+    #main-navbar {
+        position:fixed; 
+        top:0; 
+        left:0; 
+        right:0; 
+        z-index:10;
+        height:50px;
+        background-color: burlywood;
+    }
+    #toggle-sidebar {
+        position:absolute; 
+        top:14px; 
+        right:20px; 
+        cursor:pointer;
+    }
+
+    #main-sidebar {
+        position:fixed; 
+        top:0; 
+        bottom:0;
+        background-color:white;
+        display: none;
+    }
+    #main-sidebar .close-sb {
+        padding:0 0 0 20px;
+        border-bottom:1px solid #c11b00;
+        font:20px/70px Acme;
+        cursor:pointer;
+    }
+
+    #main-sidebar ul li>a {
+        display:block;
+        padding:0 0 0 20px;
+        background-color:white;
+        border-top:1px solid #f4f4f4; 
+        border-bottom:1px solid #d4d4d4;
+        font:14px/48px NGBold; 
+        color:#555;
+    }
+
+    #main-sidebar ul li>a:hover {
+        background:#333;
+        border-top:1px solid; 
+        border-bottom:1px solid #010101;
+        color:#fff;
+    }
+    #main-sidebar ul li li>a {
+        display:block;
+        padding:0 0 0 20px;
+        background:#f7f7f7;
+        border-bottom:1px solid #dedee0;
+    }
+        
+        table, td, th{
+            border: 1px solid;
+            padding: 5px;
+            border-collapse: collapse;
+            margin: 8px;
+        }
+        .topMenu{
+        	float: left;
+        	height:50px;
+        	width: 100px;
+        	margin: 12px;
+        }
+	</style>
+	
+</head>
+	<body>
+        <div id="main-navbar">
+        	<div class="topMenu">
+        		<b>
+	        		<a href="./">
+	        			로고
+	        		</a>
+        		<b/>
+        	</div>
+            <div class="topMenu">공지&이벤트</div>
+            <div class="topMenu">견적문의</div>
+            <div class="topMenu">중고거래</div>
+            <div class="topMenu">매장정보</div>
+            <div class="topMenu">고객문의</div>
+            <div id="toggle-sidebar"><img src="http://minimar0.dothome.co.kr/img/btn_menu.png" width="28" alt="메뉴 전체보기" /></div>
+        </div>
+        <div id="main-sidebar">
+            
+            <table>
+                <tr>
+                    <th>
+                       ID : 
+                    </th>
+                    <td>
+                        <input type="text" name="loginId"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                       PW : 
+                    </th>
+                    <td>
+                        <input type="password" name="loginPw"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a href="#">회원가입</a>
+                        <a href="./myIdFind">아이디 찾기</a>
+                        <a href="./myPwFind">비밀번호 찾기</a>
+                    </td>
+                </tr>
+            </table>
+            
+            <nav>
+                <table>
+                    <tr>
+                        <td><a href="./noteSendAdmin">쪽지</a></td>
+                        <td><a href="./userList1">회원 관리</a></td>
+                        <td><a href="./deliveryList">용달 신청</a></td>
+                    </tr>
+                    <tr>
+                    	<td><a href="./myBuyList">거래내역</a></td>
+                        <td><a href="#">신고 관리</a></td>
+						<td><a href="#">1:1 문의</a></td>
+                    </tr>
+                    <tr>
+                    	<td><a href="./boardCategory">게시판 수정</a></td>
+                        <td></td>
+						<td></td>
+                    </tr>
+                </table>
+            </nav>
+            
+            <hr/>
+            <a href="#" id="logoutATag"><h2>로그아웃</h2></a>
+            
+        </div>
+        
+		
+	</body>
+	<script type="text/javascript">
+        var session = "${sessionScope.loginId}";
+        
+        
+        
+        $(document).ready(function() {
+	        $('#main-sidebar').simpleSidebar({
+                opener: '#toggle-sidebar',
+                wrapper: '#main',
+                animation: {
+                    easing: "easeOutQuint"
+                },
+                sidebar: {
+                    align: 'right',
+                    closingLinks: '.close-sb',
+                },
+                sbWrapper: {
+                    display: true
+                }
+	        });
+            
+            if("session"==""){
+                $("#logoutATag").css("display","none");
+            }
+            
+        });
+        
+        $("#toggle-sidebar").click(function () {
+        	
+        	$("#main-sidebar").css("display","block");
+        
+		});
+        
+		$(".topMenu").on("click",function getId(){
+			
+			$(this).css("background", "black"); 
+			
+			if($(this).attr("id")=="1"){
+				$("#home1").css("display","block");
+			}else{
+				$("#home1").css("display","none");
+			}
+			
+			if($(this).attr("id")=="2"){
+				$("#home2").css("display","block");
+			}else{
+				$("#home2").css("display","none");
+			}
+			
+			if($(this).attr("id")=="3"){
+				$("#home3").css("display","block");
+			}else{
+				$("#home3").css("display","none");
+			}
+			
+			if($(this).attr("id")=="4"){
+				$("#home4").css("display","block");
+			}else{
+				$("#home4").css("display","none");
+			}
+			
+			if($(this).attr("id")=="5"){
+				$("#home5").css("display","block");
+			}else{
+				$("#home5").css("display","none");
+			}
+		 });
+	</script>
+</html>

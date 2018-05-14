@@ -1,0 +1,113 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>   
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+			<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<style>
+				*html ul li a{height:1%;}
+			#dropdownNav{margin:0;padding:0;cursor:pointer;}
+			#dropdownNav a, #dropdownNav a:hover, #dropdownNav ul{font:20px arial;}
+			#dropdownNav ul{width:600px;background:white;list-style-type: none; border-bottom: 1px solid white;margin:5; padding:0;}
+			#dropdownNav li ul{border:none;}
+			#dropdownNav ul li a{margin:20px 15;padding:2px 4px; display:block;color:green;text-decoration:none;}
+			#dropdownNav ul li a:hover{color:#442222;background-color:#dddddd;border-color:#666666;}
+			#dropdownNav .caption{margin:;border-top:1px solid black;color:black ;font-weight:700;
+			background-color:white; background-position:5px center;background-repeat: no-repeat;padding:15px 10px 20px 15px;}
+			#dropdownNav .show ul{display:block;}
+			#dropdownNav .hide ul{display:none;}
+
+				
+		</style>
+	</head>
+	<body>
+		 <jsp:include page="../memberLoginBox.jsp"/>
+    	 <jsp:include page="../mdgroupSideBar.jsp"/> 	
+    		
+    	<br>
+    	<br>
+    	<br>
+    	<br>
+    	<br>
+    	<div id="dropdownNav" style="margin-left: 37%; top:20%">
+		   <ul id="nav">
+		      <li class="hide">
+		         <div class="caption" onclick="javascript:populate_menu(this)">Q:이메일인증버튼을 눌러도 안되요 어떻게 하면되죠?</div>
+		         <ul>
+		            <li>이렇게저렇게하세요</li>
+		            
+		         </ul>
+		      </li>
+		      <li class="hide">
+		         <div class="caption" onclick="javascript:populate_menu(this)">Q:회원탈퇴 문제</div>
+		         <ul>
+		            <li>이렇게 저렇게 하세요</li>
+		           
+		         </ul>
+		      </li>
+		      
+		      
+		   </ul>
+		</div>
+    	<%-- <div id="dropdownNav">
+    		<h1>자주 묻는 질문</h1>
+    		
+    		<c:forEach items="${ qnaList}" var="qnaList">
+    			
+    			
+	    		<button class="accordion">
+	    		
+	    		${qnaList.b_subject }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	    		<c:if test="${sessionScope.loginRating == 9}">
+	    			<a href="">수정</a>
+	    		</c:if>
+	    		</button>
+				<div class="panel">
+				  <p>${qnaList.b_content }</p>
+				</div>
+			</c:forEach>
+			
+    		<c:if test="${sessionScope.loginRating == 9}">
+    			<button onclick="javascript:qnaWriteForm()">질문 작성하기</button>
+    			<input type="button" onclick="location.href='./listCall?c_idx=20&c_num=${param.c_num}'" value="취소"/>
+    		</c:if>
+    		
+    	</div>
+    	 --%>
+
+    	
+  
+	</body>
+	<script type="text/javascript">
+	
+	 function populate_menu(i){
+		   if(i.parentNode.className=='show'){
+		      i.parentNode.className='hide';
+		   }
+		   else{
+		      i.parentNode.className='show';
+		   }
+		}
+	 
+		function qnaWriteForm(){
+			location.href="./qnaWriteForm?c_idx=20&c_num=${param.c_num}";
+		}
+	
+		var acc = document.getElementsByClassName("accordion");
+		var i;
+
+		for (i = 0; i < acc.length; i++) {
+		    acc[i].addEventListener("click", function() {
+		        this.classList.toggle("active");
+		        var panel = this.nextElementSibling;
+		        if (panel.style.display === "block") {
+		            panel.style.display = "none";
+		        } else {
+		            panel.style.display = "block";
+		        }
+		    });
+		}
+	</script>
+</html>

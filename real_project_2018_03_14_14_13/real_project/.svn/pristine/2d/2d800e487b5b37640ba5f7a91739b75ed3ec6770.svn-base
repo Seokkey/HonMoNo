@@ -1,0 +1,206 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html>
+	<head>
+	<title>Insert title here</title>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script src="http://minimar0.dothome.co.kr/js/jquery.simple-sidebar.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	
+ 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="./resources/css/loginBoxCss.css">
+	<style>
+		
+	
+	</style>
+</head>
+	<body>
+        <div id="main-navbar">
+        	<div class="topMenu">
+        		<b>
+	        		<a href="./">
+	        			로고
+	        		</a>
+        		<b/>
+        	</div>
+        	<table>
+        		<tr id="cTable">
+        		
+        		</tr>        	
+        	</table>
+           <!--  <div class="topMenu" id="1">공지&이벤트</div>
+            <div class="topMenu" id="2">견적문의</div>
+            <div class="topMenu" id="3">중고거래</div>
+            <div class="topMenu" id="4">매장정보</div>
+            <div class="topMenu" id="5">고객문의</div> -->
+            <div id="toggle-sidebar"><img src="http://minimar0.dothome.co.kr/img/btn_menu.png" width="28" alt="메뉴 전체보기" /></div>
+        </div>
+        <div id="main-sidebar">            
+            <table>
+                <tr>
+                    <th>
+                       ID : 
+                    </th>
+                    <td>
+                        <input type="text" name="loginId"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                       PW : 
+                    </th>
+                    <td>
+                        <input type="password" name="loginPw"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a href="#">회원가입</a>
+                        <a href="./myIdFind">아이디 찾기</a>
+                        <a href="./myPwFind">비밀번호 찾기</a>
+                    </td>
+                </tr>
+            </table>
+            
+            <nav>
+                <table>
+                    <tr>
+                        <td><a href="./myEstimate">내 견적</a></td>
+                        <td><a href="./noteList">1:1 견적 상담</a></td>
+                        <td><a href="#">관심 게시판</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="./myBuyList">거래내역</a></td>
+                        <td><a href="./planDrawingList">내 도면</a></td>
+						<td><a href="#">개인정보 수정</a></td>
+                    </tr>
+                </table>
+            </nav>
+            
+            <hr/>
+            <a href="#" id="logoutATag"><h2>로그아웃</h2></a>
+            
+        </div>
+        <br/><br/><br/><br/>
+		<%-- <div id="home1"><jsp:include page="eventSideBar.jsp"></jsp:include></div>
+ 		<div id="home2"><jsp:include page="estimateSideBar.jsp"></jsp:include></div>
+		<div id="home3"><jsp:include page="usedSideBar.jsp"></jsp:include></div>
+		<div id="home4"><jsp:include page="shopInfoSideBar.jsp"></jsp:include></div>
+		<div id="home5"><jsp:include page="questionSideBar.jsp"></jsp:include></div> --%>
+	</body>
+	<script type="text/javascript">
+        var session = "${sessionScope.loginId}";
+     
+        
+        $(document).ready(function() {
+        	$.ajax({
+    			url:'./maincategory',
+    			dataType:'json',
+    			success:function(data){
+    				console.log(data);
+    				console.log(data.clist.length);
+    				var contents="";
+    				for(var i =0;i<data.clist.length;i++){    					
+		        		contents +="<td><div class='topMenu' id="+i+">"+data.clist[i].c_name+"</div></td>";	
+    				}
+    				 $("#cTable").append(contents);
+    			},
+    			error:function(error){
+    				alert('error')
+    				console.log(error);
+    			}    	
+    	});
+    	
+	        $('#main-sidebar').simpleSidebar({
+                opener: '#toggle-sidebar',
+                wrapper: '#main',
+                animation: {
+                    easing: "easeOutQuint"
+                },
+                sidebar: {
+                    align: 'right',
+                    closingLinks: '.close-sb',
+                },
+                sbWrapper: {
+                    display: true
+                }
+	        });
+            
+            if("session"==""){
+                $("#logoutATag").css("display","none");
+            }
+            
+        });
+        
+        $("#toggle-sidebar").click(function () {
+        	
+        	$("#main-sidebar").css("display","block");
+        
+		});
+        
+        
+		  $(".topMenu").on("click",function getId(){
+			
+			$(this).css("background", "black"); 
+			
+			if($(this).attr("id")=="1"){
+				$("#home1").css("display","block");
+			}else{
+				$("#home1").css("display","none");
+			}
+			
+			if($(this).attr("id")=="2"){
+				$("#home2").css("display","block");
+			}else{
+				$("#home2").css("display","none");
+			}
+			
+			if($(this).attr("id")=="3"){
+				$("#home3").css("display","block");
+			}else{
+				$("#home3").css("display","none");
+			}
+			
+			if($(this).attr("id")=="4"){
+				$("#home4").css("display","block");
+			}else{
+				$("#home4").css("display","none");
+			}
+			
+			if($(this).attr("id")=="5"){
+				$("#home5").css("display","block");
+			}else{
+				$("#home5").css("display","none");
+			}
+		 }); 
+		 
+		 
+		    $(function(){
+				$(document).mouseup(function(e) {
+					if ($(e.target).parents('.zeta-menu').length == 0) {
+						$('.zeta-menu li').removeClass('expand');
+						$('.zeta-menu ul').hide();
+					}
+				});
+				$(".zeta-menu>li:has(ul)>a").each( function() {
+					$(this).html( $(this).html()+' &or;' );
+				});
+				 $(".zeta-menu ul li:has(ul)")
+					.find("a:first")
+					.append("<p style='float:right;margin:-3px'>&#9656;</p>"); 
+			
+				 $(".zeta-menu li>a").click(function(){
+					var li = $(this).parent();
+					var ul = li.parent()
+					ul.find('li').removeClass('expand');
+					ul.find('ul').not(li.find('ul')).hide();
+					li.children('ul').toggle();
+					if( li.children('ul').is(':visible') || li.has('ul')) {
+						li.addClass('expand');
+					} 
+				});
+			});
+	</script>
+</html>

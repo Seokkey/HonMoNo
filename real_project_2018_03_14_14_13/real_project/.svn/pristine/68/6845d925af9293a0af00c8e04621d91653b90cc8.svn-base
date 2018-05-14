@@ -1,0 +1,100 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.CategoryDao;
+import com.project.dto.CategoryDto;
+
+@Service
+public class CategoryService {
+
+	@Autowired
+	private CategoryDao cDao;
+	
+	@Autowired
+	HttpServletRequest request;
+	
+	
+	
+	public Map<String, List<CategoryDto>> getMainCate() {
+		List<CategoryDto> clist = cDao.getMaincategory();
+
+		Map<String, List<CategoryDto>>cMap=new HashMap<String ,List<CategoryDto>>();
+		cMap.put("clist",clist);
+		System.out.println("cMap : "+ cMap);
+		return cMap;
+	}
+	
+	
+	public Map<String, List<CategoryDto>> getSubCate(int cnum) {
+		List<CategoryDto> subList = cDao.getSubcategory(cnum);
+		
+		Map<String,List<CategoryDto>> subMap = new HashMap<String,List<CategoryDto>>();
+		subMap.put("subList",subList);
+		System.out.println("subList : "+ subList);
+		return subMap;
+	}
+
+
+	public Map<Object, Object> faAdd(CategoryDto categorydto) {
+		Map<Object,Object> map = new HashMap<>();
+		String nick = (String) request.getSession().getAttribute("loginNick") ;
+		int c_idx = Integer.parseInt(request.getParameter("c_idx"));
+		System.out.println("nick : "+categorydto.getB_nick()+"// c_idx : "+categorydto.getC_idx());
+		map.put("c_idx",c_idx);
+		map.put("b_nick",nick);
+		int addSuc = cDao.faAdd(map);
+		System.err.println("addSuc : "+addSuc);
+		String msg="";
+		if(addSuc == 1){
+			msg="즐겨찾기에 등록 하셧습니다.";
+		}else{
+			msg="즐겨찾기 등록에 실패 하셧습니다.";
+		}
+		
+		map.put("msg", msg);
+		return map;
+	}
+
+
+	public Map<Object, Object> faDel(CategoryDto categorydto) {
+		Map<Object,Object> map = new HashMap<>();
+		String nick = (String) request.getSession().getAttribute("loginNick") ;
+		int c_idx = Integer.parseInt(request.getParameter("c_idx"));
+		System.out.println("nick : "+categorydto.getB_nick()+"// c_idx : "+categorydto.getC_idx());
+		map.put("c_idx",c_idx);
+		map.put("b_nick",nick);
+		
+		int delSuc = cDao.faDel(map);
+		String msg="";
+		if(delSuc == 1){
+			msg="즐겨찾기에서 삭제 했습니다.";
+		}else{
+			msg="즐겨찾기 삭제에 실패 했습니다.";
+			}
+		map.put("msg", msg);
+		return map;
+	}
+
+/*	public Map<String, List<CategoryDto>> getLowCate(CategoryDto categorydto) {
+		
+		List<CategoryDto> lowList = cDao.getLowcategory(categorydto);
+		
+		Map<String,List<CategoryDto>> lowcateMap = new HashMap<String,List<CategoryDto>>();
+		System.out.println("lowCate : "+ lowList);
+		lowcateMap.put("lowList", lowList);
+		return lowcateMap;
+	}*/
+
+	
+	
+	
+}

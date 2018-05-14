@@ -1,0 +1,33 @@
+package com.project.dao;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.BoardDto;
+import com.project.dto.PhotoDto;
+import com.project.dto.ReplyDto;
+
+public interface BoardDao {
+
+	List<BoardDto> noticeList(int c_idx);
+	
+	List<BoardDto> estiBoardList(int pageNum); //견적문의 리스트 불러오기
+
+	List<BoardDto> estiBoardSerchList(HashMap<String, String> map); //견적문의 검색 리스트 불러오기
+
+	void fileInsert(PhotoDto photo); //사진 저장
+
+	BoardDto estiDetail(int b_idx); //견적문의 상세보기
+
+	List<ReplyDto> estiReplyList(int b_idx); //견적문의 댓글 불러오기
+
+	List<PhotoDto> estiPhotoList(int b_idx); //견적문의 사진 불러오기
+
+	int estiBoardCount(HashMap<String, String> map); //견적문의 게시글 카운트
+
+	int listcount(Map<Object, Object> map);
+
+	List<BoardDto> usedList(Map<Object, Object> map);
+	
+}

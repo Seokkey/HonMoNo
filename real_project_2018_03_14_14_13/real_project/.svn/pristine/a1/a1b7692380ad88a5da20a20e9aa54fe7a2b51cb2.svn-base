@@ -1,0 +1,66 @@
+package com.project.honMoNo;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.CategoryDto;
+import com.project.service.CategoryService;
+
+@Controller
+public class CateController {
+	
+	@Autowired
+	private CategoryService cs;
+		
+	
+	@RequestMapping(value = "/subcategorylist",  produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<CategoryDto>>subcategorylist(CategoryDto categorydto){		
+		System.out.println("사이드바 카테고리 : "+categorydto.getC_num());
+		int cnum=categorydto.getC_num();
+		Map<String,List<CategoryDto>> subMap = cs.getSubCate(cnum);
+		System.out.println(subMap);
+		return subMap;	
+	}	
+	
+	//중분류 카테고리 리스트
+		@RequestMapping(value = "/subCateList", method = RequestMethod.GET)
+		public ModelAndView subCateList(CategoryDto categorydto) {	
+			System.out.println("c_num : " +categorydto.getC_num());
+			System.out.println("c_name : "+categorydto.getC_name());
+			String page="";
+			ModelAndView mav = new ModelAndView();
+			
+			switch (categorydto.getC_num()) {
+			case 0:			
+				page="event/noticeView";
+				break;
+			case 1:
+				page="estimate/estimatePage";
+				break;
+			case 2:			
+				page="used/usedGuide";
+				break;
+
+			default:
+				break;
+			}
+			
+			mav.addObject("categorydto",categorydto);
+			mav.setViewName(page);	
+			return mav;
+		}	
+	/*@RequestMapping(value = "/lowCateList",  produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<CategoryDto>>lowCateList(CategoryDto categorydto){		
+		System.out.println("사이드바 하위 카테고리 : "+categorydto.getC_num()+" // "+categorydto.getC_name());				
+		Map<String,List<CategoryDto>> lowcateMap = cs.getLowCate(categorydto);
+		System.out.println(lowcateMap);
+		return lowcateMap;	
+	}*/
+}

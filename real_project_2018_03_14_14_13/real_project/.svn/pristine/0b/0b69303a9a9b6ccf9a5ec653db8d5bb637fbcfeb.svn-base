@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.MemberDao">
+
+	<select id="login" parameterType="MemberDto" resultType="MemberDto">
+		SELECT m_nick, m_rating FROM member WHERE m_id=#{m_id} AND m_pass=#{m_pass}
+	</select>
+	
+	<select id="mList1" parameterType="MemberDto" resultType="MemberDto">
+		SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY m_date DESC) AS rnum, m_nick, m_id, m_pass, m_date, m_name, m_address1, m_address2, m_address3, m_phone, m_rating, m_agree, m_status, m_key, ms_conum, ms_ceoname, ms_shopname, ms_phone, ms_brand FROM vw_membershop) WHERE m_rating=3
+	</select>
+	
+	<update id="memberRatingUp" parameterType="String">
+		UPDATE member SET m_rating = 2 WHERE m_nick = #{m_nick}
+	</update>
+	
+	<select id="mList2" parameterType="MemberDto" resultType="MemberDto">
+		SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY m_date DESC) AS rnum, m_nick, m_id, m_pass, m_date, m_name, m_address1, m_address2, m_address3, m_phone, m_rating, m_agree, m_status, m_key FROM member WHERE m_rating=1)
+	</select>
+	
+	<delete id="mDel" parameterType="String">
+		DELETE FROM member WHERE m_nick=#{m_nick}
+	</delete>
+	
+</mapper>

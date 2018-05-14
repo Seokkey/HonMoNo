@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+	<!-- 견적문의 게시글 리스트 불러오기 + 댓글 수 카운트  -->
+	<select id="estiBoardList" parameterType="HashMap" resultType="BoardDto">
+		<![CDATA[
+		SELECT * FROM (SELECT ROWNUM AS rnum, v.em_choosedid, v.b_idx, v.em_product, v.b_subject, v.b_nick, v.em_date, v.d_area, v.b_date, v.b_hit, v.b_display,(SELECT COUNT(*) FROM reply r WHERE r.b_idx = v.b_idx AND r.r_display ='Y' ) AS rcount 
+						FROM(SELECT * FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y' ORDER BY b_idx DESC) v) 
+						WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10						
+			 ]]>
+	</select>
+	
+	<!-- 견적문의 게시글 카운트  -->
+	<select id="estiBoardCount" parameterType="HashMap" resultType="int">
+		<choose>			
+			<when test="area == null and furnitureCategory == null and keyword == null and searchtxt == null">
+				SELECT COUNT(*) FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y'
+			</when>
+			<when test="keyword.equals('writer')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_nick LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<when test="keyword.equals('sub')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<otherwise>
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%'
+			</otherwise>
+		</choose>		
+	</select>
+	
+	<!-- 견적문의 검색 리스트 불러오기  -->
+	<select id="estiBoardSerchList" parameterType="HashMap" resultType="BoardDto">
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, em_product, b_subject, b_content, b_nick, em_date, d_area, b_date, b_hit 
+            FROM(SELECT * FROM(SELECT * FROM(SELECT * FROM vw_estimate WHERE c_idx=#{c_idx} AND b_display='Y' ORDER BY b_idx DESC)) WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE '%'||#{area}||'%') 
+            			 	<choose>
+            			    <when test="keyword.equals('writer')">
+						      	WHERE b_nick LIKE '%'||#{searchtxt}||'%')
+						    </when>
+						    <when test="keyword.equals('sub')">
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%')
+						    </when>
+						    <otherwise>
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%')
+						    </otherwise>						    
+						    </choose>
+						    <![CDATA[
+						    WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+						    ]]>
+	</select>
+	
+	<!-- 견적문의 상세 보기 -->
+	<select id="estiDetail" parameterType="String" resultType="BoardDto">
+		SELECT * FROM vw_estimate WHERE b_idx = #{bidx}
+	</select>
+	
+	<!-- 견적문의 댓글 리스트 불러오기  -->
+	<select id="estiReplyList" parameterType="String" resultType="ReplyDto">
+		SELECT * FROM reply WHERE b_idx = #{bidx} AND r_display='Y' ORDER BY r_date
+	</select>
+	
+	<!-- 견적문의 게시글 사진 불러오기 -->
+	<select id="estiPhotoList" parameterType="String" resultType="PhotoDto">
+		SELECT * FROM photo WHERE b_idx = #{bidx}
+	</select>
+	
+	<!-- 견적문의 게시판 이름 불러오기 -->
+	<select id="estiBoardName" parameterType="int" resultType="String">
+		SELECT c_name FROM category WHERE c_idx=#{c_idx}
+	</select>	
+	
+	<!-- *공통* 조회수 올리기 -->
+	<update id="updateB_hit" parameterType="String">
+		UPDATE board SET b_hit=b_hit+1 WHERE b_idx=#{b_idx}
+	</update>
+
+	<!-- 견적문의 댓글 등록 -->
+	<insert id="estiReplyWrite" parameterType="ReplyDto">
+		INSERT INTO reply VALUES (seq_ridx.NEXTVAL, #{r_nick}, #{b_idx}, #{r_content}, default, default)
+	</insert>	
+
+	<!-- 견적문의 댓글 삭제 -->
+	<update id="estiReplyDel" parameterType="ReplyDto">
+		UPDATE reply SET r_display='N' WHERE r_idx=#{r_idx}
+	</update>	
+	
+	<!-- 견적문의 게시글 삭제  -->
+	<update id="estiBoardDelete" parameterType="BoardDto">
+		UPDATE board SET b_display='N' WHERE b_idx=#{b_idx}
+	</update>
+	
+	<!-- *공통* 메인 게시판 글 쓰기  -->	
+	<insert id="boardWrite" parameterType="BoardDto" useGeneratedKeys="true" keyProperty="b_idx">
+		INSERT INTO board(b_idx, c_idx, b_nick, b_subject, b_content, b_hit, b_date, b_display) 
+		VALUES(SEQ_BIDX.NEXTVAL, #{c_idx}, #{b_nick}, #{b_subject}, #{b_content}, DEFAULT, sysdate, DEFAULT)
+			<selectKey keyProperty="b_idx" order="AFTER" resultType="int">
+				SELECT SEQ_BIDX.CURRVAL FROM DUAL
+			</selectKey>
+	</insert>
+	
+	<!-- 견적문의 게시글 쓰기  -->	
+	<insert id="estiBoardWrite" parameterType="BoardDto">
+		INSERT INTO estimate(b_idx, d_area, em_date, em_brand, em_product, em_choosedid) 
+		VALUES(#{b_idx},#{d_area},#{em_date},#{em_brand},#{em_product}, DEFAULT)	
+	</insert>
+	
+	<!-- *공통* 메인 게시글 수정  -->
+	<update id="boardUpdate" parameterType="BoardDto">
+		UPDATE board SET b_subject=#{b_subject}, b_content=#{b_content} WHERE b_idx=#{b_idx}
+	</update>
+
+	<!-- 견적문의 게시글 수정하기  -->
+	<update id="estiBoardUpdate" parameterType="BoardDto">
+		UPDATE estimate SET d_area=#{d_area}, em_date=#{em_date}, em_product=#{em_product} WHERE b_idx=#{b_idx}
+	</update>
+		
+	<!-- 견적문의 채택하기  -->
+	<update id="estiChoose" parameterType="BoardDto">
+		UPDATE estimate SET em_choosedid=#{em_choosedid} WHERE b_idx=#{b_idx}
+	</update>
+	
+	
+	
+	
+	
+	
+</mapper>

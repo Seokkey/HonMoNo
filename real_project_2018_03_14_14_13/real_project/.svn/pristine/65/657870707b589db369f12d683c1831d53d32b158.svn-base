@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+<select id="shoplistcount" parameterType="map" resultType="int">
+	<if test="search == null and keyword ==null">
+		SELECT COUNT(*) FROM vw_shopinfo WHERE c_idx=#{c_idx} AND b_display ='Y'
+	</if>
+		<if test="search != null and keyword !=null">
+		SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_shopinfo WHERE c_idx=#{c_idx} AND b_display ='Y')
+		 WHERE sh_address LIKE '%'||#{keyword}||'%' 
+	</if>
+</select>
+<select id="shopList" parameterType="map" resultType="BoardDto">
+	<if test="search == null and keyword == null">
+		SELECT *FROM (
+             SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) 
+             AS rnum, sh_brand,sh_name,sh_address,sh_phone,b_idx, b_nick, sh_introduce, b_date, b_Hit ,sh_officehour,sh_prproduct,sh_list
+             FROM vw_shopinfo WHERE c_idx=#{c_idx} AND b_display ='Y' <![CDATA[ )WHERE rnum>=#{start}*10-9 and rnum<=#{start}*10]]> 
+	</if>
+	<if test="search != null and keyword != null">
+		SELECT *FROM (
+             SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) 
+             AS rnum, sh_brand,sh_name,sh_address,sh_phone,b_idx, b_nick, sh_introduce, b_date, b_Hit  ,sh_officehour,sh_prproduct,sh_list
+             FROM vw_shopinfo WHERE c_idx=#{c_idx} AND b_display ='Y' AND sh_address LIKE '%'||#{keyword}||'%' <![CDATA[ )WHERE rnum>=#{start}*10-9 and rnum<=#{start}*10]]> 
+	</if>
+</select>
+
+	<select id="getFile" parameterType="map" resultType="PhotoDto">
+		SELECT * FROM photo WHERE p_thum='Y' AND b_idx in 
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item.value} 
+		</foreach>
+	</select>
+<insert id="shopWrite" parameterType="BoardDto" useGeneratedKeys="true" keyProperty="b_idx">
+		INSERT INTO board(b_idx,c_idx,b_nick,b_subject,b_content,b_hit,b_date) 
+		VALUES(SEQ_BIDX.NEXTVAL,#{c_idx},#{b_nick},'매장정보','매장정보',0,sysdate)
+			<selectKey keyProperty="b_idx" order="AFTER" resultType="int">
+				SELECT SEQ_BIDX.CURRVAL FROM DUAL
+			</selectKey>
+	</insert>
+	
+	<insert id="shopsWrite" parameterType="BoardDto">
+		INSERT INTO 
+		shopinfo(b_idx,sh_brand,sh_name,sh_address,sh_phone,sh_introduce,sh_officehour,sh_close,sh_prproduct,sh_list) 
+		VALUES(#{b_idx},#{sh_brand},#{sh_name},#{sh_address},#{sh_phone},#{sh_introduce},#{sh_officehour},#{sh_close},#{sh_prproduct},#{sh_list})	
+	</insert>
+	
+	<select id="shopDetail" parameterType="int" resultType="BoardDto">
+		SELECT * FROM vw_shopinfo WHERE b_idx=#{b_idx}
+	</select>
+
+	<select id="shopPhoto" parameterType="int" resultType="PhotoDto">
+		SELECT * FROM photo WHERE b_idx=#{b_idx}
+	</select>
+	
+	<update id="shopUpdate" parameterType="BoardDto">
+		UPDATE board
+		SET b_date=sysdate WHERE b_idx=#{b_idx}
+	</update>
+	
+	<update id="shopsUpdate" parameterType="BoardDto">
+		UPDATE shopinfo SET sh_brand=#{sh_brand},sh_name=#{sh_name},sh_address=#{sh_address},sh_phone=#{sh_phone}
+		,sh_introduce=#{sh_introduce},sh_officehour=#{sh_officehour},sh_close=#{sh_close},sh_prproduct=#{sh_prproduct},sh_list=#{sh_list}
+		WHERE b_idx=#{b_idx}	
+	</update>
+	
+	<delete id="fileDelthum" parameterType="int">
+		DELETE FROM photo WHERE b_idx =#{b_idx} AND p_thum='Y'
+	</delete>
+	
+	<delete id="fileDeln">
+		DELETE FROM photo WHERE b_idx=#{b_idx} AND p_thum='N'
+	</delete>
+	
+	<update id="shopDel" parameterType="int">
+		UPDATE board set b_display='N' WHERE b_idx=#{b_idx}
+	</update>
+</mapper>
+

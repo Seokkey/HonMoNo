@@ -1,0 +1,105 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+	<title>Insert title here</title>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<style>
+		table, td, th{
+            border: 1px solid;
+            padding: 5px;
+            border-collapse: collapse;
+            margin: 8px;
+            text-align: center;
+        }
+        #sidaBarTop{
+        	background-color: green;
+        }
+      #sideBar{
+        border: 1px solid;
+        float:left;
+        position:absolute;
+        bottom:64%;
+        left:5%;
+        }
+        #hak{
+        	position: absolute;
+                top:22%;
+                right:40%;
+        }
+        #hak3{
+        	position: absolute;
+        	left: 38.5%;
+        	bottom:54%;
+        
+        }
+	</style>
+	
+</head>
+	<body>
+		<br/><br/><br/>
+		<jsp:include page="../memberLoginBox.jsp"/>
+		<br/>
+		
+		<h1>관리자 쪽지 리스트</h1>
+		<br/><br/>
+		include side바
+		ex)	
+		<div id="sideBar">
+			<table>
+			<tr>
+				<th id="sidaBarTop">쪽지 리스트</th>
+			</tr>
+			<tr>
+				<td><a href="./noteSendAdmin">쪽지 보내기</a></td>
+			</tr>
+			<tr>
+				<th>쪽지 리스트</th>
+			</tr>	
+			</table>
+		</div>
+		<table>
+		    <tr>
+		        <th>번호</th>
+		        <th>거래 글 리스트</th>
+		        <th>대화 상대</th>
+		        <th>상담 시작 날짜</th>
+		    </tr>
+		    <tr>
+		        <td>1</td>
+		        <td><a href="#">(회원아이디) 와의 1:1 대화</a> <span id="noteChk">(new 가 들어갈 영역)</span></td>
+		        <td>(회원아이디)</td>
+		        <td>2018-02-05</td>
+		    </tr>
+		    		    <tr>
+		        <td>3</td>
+		        <td><a href="#">(회원아이디) 와의 1:1 대화</a> <span id="noteChk">(new 가 들어갈 영역)</span></td>
+		        <td>(회원아이디)</td>
+		        <td>2018-02-06</td>
+		    </tr>
+		</table>
+		
+		<input id="toMainBtn" type="button" value="메인으로"/>
+		<br/>
+		<a href=./a>임시 쪽지 링크</a>
+	</body>
+	<script type="text/javascript">
+        
+        $(document).ready(function(){
+            noteChk();
+        });
+        
+        function noteChk(){
+            $.ajax({
+                
+            });
+        }
+        
+        $("#toMainBtn").click(function() {
+			location.href="./"
+		});
+        
+	</script>
+</html>

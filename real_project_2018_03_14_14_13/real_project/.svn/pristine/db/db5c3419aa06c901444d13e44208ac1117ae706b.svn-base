@@ -1,0 +1,80 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>거래 요청 수정 폼</title>
+	</head>
+	<body>
+		<h1>거래 요청 내역서 수정하기</h1>
+		<form action="#">
+			<table>
+				<tr>
+					<th>배송 정보 입력란</th>
+				</tr>
+				<tr>
+					<td>이름: <input type="text" name="name" value="${등록한 이름}"></td><td>배송 희망일: ${달력}</td>
+				</tr>
+				<tr>
+					<td>배송 주소: <input type="text" name="address" value="${주소}"></td>
+				</tr>
+				<tr>
+					<td>연락처 1: <input type="text" name="phone1" value="${연락처1}"></td>
+					<td>연락처 2: <input type="text" name="phone2" value="${연락처2}"></td>
+				</tr>
+				<tr>
+					<th>제품 구매 내역</th>
+				</tr>
+				<tr>
+					<td>모델명</td><td>규격</td><td>색상</td><td>수량</td><td>단가</td><td>비고</td>
+				</tr>
+				
+				<tr><!-- 
+					<div id="pre_set" style="position:relative"> -->
+					<td><input type="text" name="model" value="${모델명 }"></td>
+					<td><input type="text" name="size" value="${사이즈 }"></td>
+					<td><input type="text" name="color" value="${색상}"></td>
+					<td><input type="text" name="amount" value="${수량}"></td>
+					<td><input type="text" name="price" value="${단가}">원</td>
+					<td><input type="text" name="note" value="${비고}">&nbsp;&nbsp;<input type="button" value="품목 삭제" onclick="remove_item(this)"></td>
+					<!-- </div> -->
+				</tr>				
+				<!-- <tr><div  id="field" style="position:relative"></div></tr> -->
+				<tr>
+					<td>
+						<input type="button" value="품목 추가 " onclick="add_item()">						
+					</td>					
+				</tr>
+				<tr>
+					<td>총 결제 금액 : <input type="text" name="sumPrice" value="${총합 }"></td><td>결제방법 : 안전거래</td>					
+				</tr>
+				<tr>
+				<td>기타 특약 사항 : <br/>
+					 <textarea>
+					 ${특약사항 }
+	                </textarea> 
+	            </td>
+			</tr>				
+			</table>
+			<br>
+		</form>
+		<input type="submit" value="수정 하기">
+	</body>
+	<script>
+	    function add_item(){
+	        // pre_set 에 있는 내용을 읽어와서 처리..
+	        var div = document.createElement('div');
+	        div.innerHTML = document.getElementById('pre_set').innerHTML;
+	        document.getElementById('field').appendChild(div);
+	    }
+	 
+	    function remove_item(obj){
+	        // obj.parentNode 를 이용하여 삭제
+	        document.getElementById('field').removeChild(obj.parentNode);
+	    }
+	</script>
+</html>

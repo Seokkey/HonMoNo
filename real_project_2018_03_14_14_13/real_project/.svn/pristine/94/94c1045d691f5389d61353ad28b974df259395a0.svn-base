@@ -1,0 +1,34 @@
+package com.project.dao;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.CategoryDto;
+import com.project.dto.MessageDto;
+
+public interface CategoryDao {
+
+	List<CategoryDto> getMaincategory();
+	int noticeIdx(int c_num);
+	List<CategoryDto> noticeList(int noticeidx);
+	List<CategoryDto> getSubcategory(int cnum);
+	int getFavorite(Map<Object, Object> map); //즐겨찾기 인지 확인
+	int faAdd(Map<Object, Object> map);	//즐겨찾기 추가
+	int faDel(Map<Object, Object> map);	//즐겨찾기 삭제
+	
+	
+	/*메시지 DAO*/
+	int sendMsg(MessageDto messageDto); //메시지 등록	
+	List<MessageDto> messageNoticeList(HashMap<String, Object> map); //공지 메시지 리스트 불러오기
+	List<MessageDto> messageList(HashMap<String, Object> map); //일반 리스트 불러오기 검색	
+	List<MessageDto> messageSerchNoticeList(HashMap<String, Object> map); //공지 메시지 검색	
+	List<MessageDto> messageSerchList(HashMap<String, Object> map); //일반 메시지 검색
+	int messageNoticeCount(HashMap<String, String> map); //공지 메시지 카운트
+	int messageListCount(HashMap<String, String> map); //일반 메시지 카운트
+	
+	
+	
+	
+	
+}

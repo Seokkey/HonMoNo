@@ -1,0 +1,64 @@
+package com.project.dao;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.BoardDto;
+import com.project.dto.PhotoDto;
+import com.project.dto.ReplyDto;
+
+public interface BoardDao {	
+	/*공통 DAO*/
+	void fileInsert(PhotoDto photo); //공통 사진 저장
+	void updateB_hit(String bidx); //게시글 조회수 올리기
+	
+	/*견적문의 DAO*/
+	List<BoardDto> estiBoardList(HashMap<String, Integer> map); //견적문의 리스트 불러오기
+	List<BoardDto> estiBoardSerchList(HashMap<String, String> map); //견적문의 검색 리스트 불러오기
+	BoardDto estiDetail(String bidx); //견적문의 상세보기
+	List<ReplyDto> estiReplyList(String bidx); //견적문의 댓글 불러오기
+	List<PhotoDto> estiPhotoList(String bidx); //견적문의 사진 불러오기
+	int estiBoardCount(HashMap<String, String> map); //견적문의 게시글 카운트
+	String estiBoardName(String c_idx);// 견적문의 게시판별 이름 가져오기
+	int estiReplyWrite(ReplyDto reply); //견적문의 댓글 쓰기
+	
+
+	/*중고거래 DAO*/
+	int listcount(Map<Object, Object> map);//중고거래 글 개수
+	List<BoardDto> usedList(Map<Object, Object> map);//중고거래 리스트
+<<<<<<< .mine
+	String getProduc(int c_idx);//중고거래 게시판별 이름 가져오기
+	int useWrite(BoardDto boarddto);
+	int fileInsert(Map<String, String> fileMap);
+	int usedWrite(BoardDto boarddto);
+||||||| .r135
+=======
+	
+
+	
+	
+>>>>>>> .r178
+	
+	/*공지&이벤트 DAO*/
+	
+	BoardDto noticeDetail(int b_idx);
+	List<PhotoDto> noticePhotoList(int b_idx);
+	List<BoardDto> noticeBoardList(HashMap<String, Integer> map);
+	List<BoardDto> noticeBoardSerchList(HashMap<String, String> map);
+	String noticeBoardName(String c_idx);
+	int noticeBoardCount(HashMap<String, String> map);
+
+	
+	
+	
+	/*매장소개 DAO*/
+	
+	
+	/*고객문의 DAO*/
+	
+
+	/**/
+
+	
+}

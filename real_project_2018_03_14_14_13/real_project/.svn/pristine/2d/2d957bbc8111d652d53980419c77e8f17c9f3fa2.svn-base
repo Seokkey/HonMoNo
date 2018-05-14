@@ -1,0 +1,50 @@
+package com.project.honMoNo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.MemberDto;
+import com.project.service.MemberService;
+
+@Controller
+public class MemberController {
+	
+	@Autowired
+	MemberService mService;
+	
+	//로그인 컨트롤러.
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public ModelAndView login(MemberDto mdto) {
+		System.out.println("로그인 컨트롤러 진입");
+		
+		System.out.println("login : "+mdto.getM_id()+" / "+mdto.getM_pass());
+		
+		ModelAndView mav = new ModelAndView();
+		
+		mav = mService.login(mdto);
+		System.out.println(mav);
+		
+		return mav;
+	}
+	
+	//로그아웃 컨트롤러
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	public ModelAndView logout() {
+		System.out.println("로그아웃 컨트롤러 진입");
+		
+		ModelAndView mav = new ModelAndView();
+		
+		mav = mService.logout();
+		
+		System.out.println(mav);
+		
+		return mav;
+	}
+	
+	
+	
+	
+}

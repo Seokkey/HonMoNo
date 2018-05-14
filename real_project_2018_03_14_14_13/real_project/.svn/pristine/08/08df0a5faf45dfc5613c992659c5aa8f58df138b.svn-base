@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+ 	<select id="noticeList" parameterType="int" resultType="BoardDto">
+		SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) AS rnum, b_idx, b_nick, b_subject, b_content, b_hit, b_date FROM board WHERE b_nick='aaa' AND c_idx=#{c_idx}) WHERE rnum BETWEEN 1 AND 10
+	</select>
+	
+</mapper>

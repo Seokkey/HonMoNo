@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+	
+	<insert id="dircetQWrite" parameterType="BoardDto" useGeneratedKeys="true" keyProperty="b_idx">
+		INSERT INTO board(b_idx,c_idx,b_nick,b_subject,b_content,b_hit,b_date) 
+		VALUES(SEQ_BIDX.NEXTVAL,22,#{b_nick},#{b_subject},#{b_content},0,sysdate)
+			<selectKey keyProperty="b_idx" order="AFTER" resultType="int">
+				SELECT SEQ_BIDX.CURRVAL FROM DUAL
+			</selectKey>
+	</insert>
+	<insert id="directQWrites">
+		INSERT INTO support(b_idx,sup_answer,sup_qanda) 
+		VALUES(#{b_idx},'N',#{sup_qanda})
+	</insert>
+	
+	<select id="directlistcount" parameterType="map" resultType="int">
+	<choose>
+		<when test="rating == 9">
+			   SELECT COUNT(*) FROM vw_support WHERE c_idx=#{c_idx} AND b_display = 'Y'
+		</when>
+		<otherwise>
+				SELECT COUNT(*) FROM vw_support WHERE c_idx=#{c_idx} AND b_display = 'Y' AND b_nick=#{b_nick}
+		</otherwise>
+	</choose>
+	
+	</select>
+	
+	<select id="directlist" parameterType="map" resultType="BoardDto">
+	<choose>
+	   <when test="rating == 9">
+       	SELECT *FROM (
+             SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) 
+             AS rnum, sup_answer,sup_qanda,b_idx, b_nick, b_subject, b_date
+             FROM vw_support WHERE c_idx=#{c_idx} AND b_display ='Y' <![CDATA[ )WHERE rnum>=#{start}*10-9 and rnum<=#{start}*10]]> 
+       </when>
+       <otherwise>
+	       SELECT *FROM (
+	             SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) 
+	             AS rnum, sup_answer,sup_qanda,b_idx, b_nick, b_subject, b_date
+	             FROM vw_support WHERE c_idx=#{c_idx} AND b_display ='Y' AND b_nick=#{b_nick} <![CDATA[ )WHERE rnum>=#{start}*10-9 and rnum<=#{start}*10]]> 
+       </otherwise>
+     
+	</choose>
+    
+	</select>
+	
+	<select id="directQDetail" parameterType="int" resultType="BoardDto">
+		SELECT * FROM vw_support WHERE b_idx=#{b_idx}
+	</select>
+	
+	<update id="directQUpdate" parameterType="BoardDto">
+		UPDATE support SET sup_answer = #{sup_answer} WHERE b_idx=#{b_idx}
+	</update>
+	
+	<select id="qnaList" parameterType="int"  resultType="BoardDto">
+		SELECT * FROM board WHERE c_idx=#{c_idx}
+	</select>
+	
+	<insert id="qnaWrite" parameterType="BoardDto">
+	 	INSERT INTO board(b_idx,c_idx,b_nick,b_subject,b_content,b_hit,b_date) 
+		VALUES(SEQ_BIDX.NEXTVAL,#{c_idx},#{b_nick},#{b_subject},#{b_content},0,sysdate)
+	</insert>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+

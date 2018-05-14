@@ -1,0 +1,216 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>견적 상세보기</title>
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>	
+	</head>	
+	<body>
+	<jsp:include page="../memberLoginBox.jsp"/>
+    <jsp:include page="../mdgroupSideBar.jsp"/>	
+		<p>견적 상세 보기<p>
+			
+		<table>
+			<tr>
+				<td>작성일 : ${bDto.b_date }</td>
+				<td>작성자 : ${bDto.b_nick }</td>				
+			</tr>
+			<tr>				
+				<td>브랜드 : ${bDto.em_brand } </td>
+				<td>제품 분류 : ${bDto.em_product }</td>
+			</tr>
+			<tr>
+				<td>배송지역 : ${bDto.d_area }</td>
+				<td>배송 희망일 : ${bDto.em_date }</td>				
+			</tr>
+			<tr>
+				<td>제목 : ${bDto.b_subject }</td>				
+			</tr>			
+			<tr>
+				<td>내용 : 
+				<c:forEach var="photo" items="${photo}">
+					<img src ="${photo.p_path}${photo.p_newname}"/>
+				</c:forEach>${bDto.b_content}</td>				
+			</tr> 
+			<tr>
+				<td align="right"> 조회수 : ${bDto.b_hit}</td>
+			</tr>
+			<tr>				
+				<td align="right">
+					<c:if test="${bDto.b_nick eq sessionScope.loginNick or sessionScope.loginRating == 9}">
+						<button onclick="location.href='./estiUpdateForm?b_idx=${bDto.b_idx}&c_idx=${param.c_idx}&c_num=${param.c_num}'">수정</button>
+						<button onclick="location.href='javascript:estiBoardDelete()'">삭제</button>
+					</c:if>					
+					<button onclick="location.href='#'">신고</button>
+					<button onclick="location.href='./listCall?c_idx=${param.c_idx}&c_num=${param.c_num}'">목록</button>
+				</td>
+			</tr>
+		</table>
+		
+		<!-- 댓글 테이블  -->
+		<table id="rTable">			
+		<c:choose>
+			<c:when test="${bDto.b_nick eq sessionScope.loginNick or sessionScope.loginRating == 9}"> <!-- 글 작성자만 댓글 보임 -->
+				<c:forEach var="reply" items="${reply}">
+					<tr>
+						<td>${reply.r_nick}</td>
+						<td>${reply.r_content}</td>
+						<td>${reply.r_date}</td> 
+						<td><button onclick="location.href='javascript:estiChoose(${reply.r_nick})'">채택하기</button></td>												
+					</tr>
+				</c:forEach>				
+			</c:when>
+			<c:otherwise>				
+				<c:forEach var="reply" items="${reply}">					
+					<c:choose>
+						<c:when test="${reply.r_nick eq sessionScope.loginNick}">														
+							<tr>
+								<td>${reply.r_nick}</td>
+								<td>${reply.r_content}</td>
+								<td>${reply.r_date}</td>													
+								<c:if test="${reply.r_nick eq sessionScope.loginNick}" >
+									<td  class="estiReplyDel">
+										<button onclick="location.href='javascript:estiReplyDel(${reply.r_idx},${bDto.b_idx})'">댓글삭제</button>
+									</td>
+								</c:if>
+							</tr>
+						</c:when>
+						<c:otherwise>
+							<tr>
+								<td colspan="4" align="center">비밀 댓글입니다.</td>
+							</tr>
+						</c:otherwise>
+					</c:choose>
+				</c:forEach>									
+			</c:otherwise>
+		</c:choose>					
+		</table>
+		
+		<!-- 댓글 작성 테이블  -->
+		<table>
+			<tr>
+				<td><textarea id="comment" placeholder="댓글 등록은 사업자 회원만 가능합니다. (2000자 이내)"></textarea></td>
+				<td><button onclick="replyInsert(${bDto.b_idx})">댓글 등록</button></td> <!--로그인 검사 -->
+			</tr>
+		</table>	
+	</body>
+	<script>
+	
+	var nick="${sessionScope.loginNick}"; //세션 닉네임
+	var rating = "${sessionScope.loginRating}"; //세션 레이팅	
+	//http://localhost:8090/honMoNo/estiReplyWrite?b_idx=437&r_content=%EC%9C%BC%EC%95%84%EC%95%99&r_nick=%ED%83%9C%EA%B2%BD
+	//댓글 유효성검사, 댓글 삽입
+	function replyInsert(b_idx){ 		
+		var comment = $('#comment').val(); //댓글 내용
+		if(nick == ""){
+			alert("로그인이 필요한 서비스 입니다.");
+			$("#toggle-sidebar").trigger("click");
+		}else{
+			if(rating == 2 || rating == 9){
+				if(comment.length<1){
+					alert("댓글을 입력해 주세요.");
+				}else if(comment.length>2000){
+					alert("2000자 이내로 입력해 주세요.");
+				}else{
+					if(confirm("댓글을 등록하시겠습니까?") == true){    //확인
+						$.ajax({
+						type:'post',
+						url:'./estiReplyWrite',
+						data:{
+							b_idx:b_idx,
+							r_content:comment,
+							r_nick:nick
+						},
+						dataType:'json',
+						success:function(data){
+							console.log(data);
+							var reply=''; //성공시 댓글 초기화 안할 시 중첩됨
+							for(var i=0;i<data.reply.length;i++){					
+								if(data.reply[i].r_nick == nick){
+									reply+='<tr>'+'<td>'+data.reply[i].r_nick+'</td>'
+											+'<td>'+data.reply[i].r_content+'</td>'
+											+'<td>'+data.reply[i].r_date+'</td>'
+											+'<td  class="estiReplyDel"  style="display: block;"><button onclick=location.href="javascript:estiReplyDel('+data.reply[i].r_idx+',${bDto.b_idx})">댓글삭제</button></td>';											
+								}else{
+									reply += '<tr><td colspan="4" align="center">비밀댓글입니다.</td></tr>';
+								}									
+									/* +'<td class="choose" style="display: none;"><button onclick=location.href="javascript:estiChoose('+data.reply[i].r_nick+')">채택하기</button></td></tr>' */
+							}
+							$('#rTable').html(reply);
+							$('#comment').val('');
+						},
+						error:function(error){
+							alert('댓글 삽입 실패');
+							console.log(error);
+						}
+						});
+					}else{//취소
+					    return;
+					}
+				}								
+			}else{
+				alert("사업자 회원만 등록 가능합니다.");
+			}			
+		}
+	}
+
+	 //채택하기
+	function estiChoose(r_nick){
+		if (confirm(r_nick+"님을 채택하시겠습니까? (※채택은 한 명만 가능하며 채택시 채택버튼은 사라집니다.※)") == true){    //확인
+		    
+		}else{//취소
+		    return;
+		}
+	}
+	
+	//댓글 삭제
+	function estiReplyDel(r_idx, b_idx){ 
+		if (confirm("댓글을 삭제하시겠습니까?") == true){    //확인
+			$.ajax({
+				type:'post',
+				url:'./estiReplyDel',
+				data:{
+					r_idx:r_idx,
+					b_idx:b_idx
+				},
+				dataType:'json',
+				success:function(data){
+					console.log(data);
+					alert('댓글이 삭제되었습니다.');
+					var reply=''; // 성공시 댓글 초기화 안할 시 중첩됨
+					for(var i=0;i<data.reply.length;i++){					
+						if(data.reply[i].r_nick == nick){
+							reply+='<tr>'+'<td>'+data.reply[i].r_nick+'</td>'
+									+'<td>'+data.reply[i].r_content+'</td>'
+									+'<td>'+data.reply[i].r_date+'</td>'
+									+'<td  class="estiReplyDel"  style="display: block;"><button onclick=location.href="javascript:estiReplyDel('+data.reply[i].r_idx+',${bDto.b_idx})">댓글삭제</button></td>';											
+						}else{
+							reply += '<tr><td colspan="4" align="center">비밀댓글입니다.</td></tr>';
+						}									
+							/* +'<td class="choose" style="display: none;"><button onclick=location.href="javascript:estiChoose('+data.reply[i].r_nick+')">채택하기</button></td></tr>' */
+					}
+					$('#rTable').html(reply);										
+				},
+				error:function(error){
+					alert('댓글 삭제 실패');
+					console.log(error);
+				}
+				});	    
+		}else{//취소
+		    return;
+		}
+	} 	
+	
+	//글 삭제
+	function estiBoardDelete(){
+		if(confirm("글을 삭제하시겠습니까?")==true){			
+			location.href="./estiBoardDelete?c_idx=${param.c_idx}&c_num=${param.c_num}&b_idx=${bDto.b_idx}";			
+		}
+	}
+	</script>
+</html>

@@ -1,0 +1,32 @@
+package com.project.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.CategoryDto;
+
+public interface CategoryDao {
+
+	List<CategoryDto> getMaincategory();
+	
+	int noticeIdx(int c_num);
+
+	List<CategoryDto> noticeList(int noticeidx);
+	
+	
+	List<CategoryDto> getSubcategory(int cnum);
+
+	//소분류 카테고리 
+	List<CategoryDto> getLowcategory(CategoryDto categorydto);
+
+	//즐겨찾기 인지 확인
+	int getFavorite(Map<Object, Object> map);
+
+	//즐겨찾기 추가
+	int faAdd(Map<Object, Object> map);
+
+
+	//즐겨찾기 삭제
+
+	int faDel(Map<Object, Object> map);
+}

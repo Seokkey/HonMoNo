@@ -1,0 +1,105 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+            table,th,td{                
+                border-collapse: collapse;
+                padding: 5px;
+                text-align: center;
+            }
+            #bbslist{
+                
+            }
+        </style>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    </head>
+    <body>      
+        <div id="bbslist">
+		  <h1>${boardName}</h1> <button>☆</button>(관심게시판 버튼이나 a 태그)
+          <br/><br/>            
+          <br/><br/>    
+          <table>
+              <thead>
+              	<tr>
+	                  <td>글번호</td>
+	                  <td> 제품분류 </td>
+	                  <td> 제목 &nbsp;</td>
+	                  <td> &nbsp; 작성자 &nbsp;</td>
+	                  <td> &nbsp; 배송 희망일 &nbsp;</td>
+	                  <td> &nbsp; 지역 &nbsp;</td>
+	                  <td> &nbsp; 작성일 &nbsp;</td>
+	                  <td>조회수</td>
+                  </tr>
+              </thead>  
+              <tbody>
+				${blist }
+              </tbody>  
+          </table>         
+      </div>
+      <br/>	${paging}
+		<br/>
+		<br/>
+			<select name="area" id="area">
+						<option value="">지역 선택</option>
+					    <option value="서울">서울</option>
+					    <option value="인천">인천</option>
+					    <option value="경기">경기</option>
+					    <option value="광주">광주</option>
+					    <option value="대전">대전</option>
+					    <option value="대구">대구</option>
+					    <option value="부산">부산</option>
+					    <option value="울산">울산</option>
+					    <option value="강원도">강원도</option>					    
+					    <option value="충북">충북</option>
+					    <option value="충남">충남</option>
+					    <option value="경북">경북</option>
+					    <option value="경남">경남</option>
+					    <option value="전북">전북</option>
+					    <option value="전남">전남</option>
+					    <option value="제주">제주</option>
+					    <option value="기타">기타</option>
+			</select>
+			<select name="furnitureCategory" id="furnitureCategory">
+						<option value="">가구선택</option>
+					    <option value="침대">침대</option>
+					    <option value="쇼파">쇼파</option>
+					    <option value="장롱">장롱</option>
+					    <option value="식탁">식탁</option>
+					    <option value="의자">의자</option>
+					    <option value="책상">책상</option>
+					    <option value="서랍장">서랍장</option>
+					    <option value="화장대">화장대</option>
+					    <option value="기타">기타</option>				    
+			</select>			
+			<!-- <input type="button" id = "meetSearchBtn" value = "검색"> -->
+			<select id = "keyword">
+				<option value="">키워드 선택</option> 
+				<option value="writer">작성자</option>
+				<option value="sub">제목</option>
+	  			<option value="subcon">제목 + 내용</option>
+			</select>
+			<input type="text" id = "searchtxt"/>
+			<a href = "javascript:searchBtn()" id = "searchBtn"> 검색</a>
+			<a href = "./estiWriteForm"> 글쓰기</a>		
+	</body>
+	<script>
+	
+	//검색 버튼
+	
+	function searchBtn(){			
+		var area = $("#area option:selected").val();
+		var furnitureCategory = $("#furnitureCategory option:selected").val();
+		var keyword = $("#keyword option:selected").val();
+		var searchtxt = $("#searchtxt").val();
+		if(keyword == "" && searchtxt != ""){
+			alert("키워드를 선택해주세요");		
+		}else{
+			location.href="./listCall?c_idx=${param.c_idx}&c_num=${param.c_num}&area="+area+"&furnitureCategory="+furnitureCategory+"&keyword="+keyword+"&searchtxt="+searchtxt;
+		}
+	}	
+	
+	</script>
+</html>

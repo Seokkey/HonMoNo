@@ -1,0 +1,39 @@
+package com.project.service;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dao.MemberDao;
+
+@Service
+public class MypageService {
+	
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	HttpSession session;
+	@Autowired
+	HttpServletRequest request;
+	private ModelAndView mav;
+	
+/*	public ModelAndView myFavoriteBbsList() {
+		
+		mav=new ModelAndView();
+		
+		String m_nick = (String) session.getAttribute("loginNick");
+		
+		List<Integer> flist = bDao.myFavoriteBbsList(m_nick);
+		
+		return mav;
+	}*/
+	
+	
+	
+}

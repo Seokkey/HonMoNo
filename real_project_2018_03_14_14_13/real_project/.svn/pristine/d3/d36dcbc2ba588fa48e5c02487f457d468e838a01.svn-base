@@ -1,0 +1,99 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<style>
+		
+		</style>
+	</head>
+	<body>
+	
+	<jsp:include page="../memberLoginBox.jsp"/>
+		<jsp:include page="../mdgroupSideBar.jsp"/> 
+    			<br>
+    			<br>
+    			<br>
+    			<br>
+    			<h1>1대1 문의 내역</h1>
+    
+	    		<c:choose>
+	    		<c:when test="${sessionScope.loginNick != null }">
+	    		
+	    	<table>
+	    		<tr>
+	    			<td>분류</td>
+	    			<td>제목</td>
+	    			<td>작성자</td>
+	    			<td>작성일</td>
+	    		</tr>
+	    	
+		    		<c:forEach items="${ directlist}" var="directlist">
+		    			<tr>
+			    		 	<td>${directlist.sup_qanda }</td>
+			    		 	<c:choose>
+			    		 		<c:when test="${ directlist.sup_answer != 'N'}">
+			    		 			<td style="margin:3%"><a href="javascript:directQDetail(${ directlist.b_idx})">${directlist.sup_qanda}[답변완료]</a></td>
+			    		 		</c:when>
+			    		 		<c:otherwise>
+			    		 			<td style="margin:3%"><a href="javascript:directQDetail(${ directlist.b_idx})">${directlist.sup_qanda}[답변대기중]</a></td>
+			    		 		</c:otherwise>
+			    		 	</c:choose>
+			    		 	<td style="margin:3%">${directlist.b_nick }</td>
+			    		 	<td style="margin:3%">${directlist.b_date }</td>
+			    		 	 </tr>
+		    		 	</c:forEach>	
+		    		 	</table>
+	    	
+	    	    	
+	    	<br>
+	    	<br>
+	    	<br>
+		    	<div id="pageForm" style=" margin-left: 10%;">				    
+					   <c:if test="${startpage >1}">
+					    	<a href='./directQList?c_idx=${c_idx}&page=${spage =1}&c_num=${param.c_num}'>[처음]</a>
+						</c:if>		   
+					        <c:if test="${spage > 1}">
+					            <a href='./directQList?c_idx=${c_idx}&page=${spage -1}&c_num=${param.c_num}'>[ 이전 ]</a>
+					        </c:if>
+					        
+					        <c:forEach var="pageNum" begin="${startPage}" end="${endPage}">
+					            <c:if test="${pageNum == spage}">
+					                ${pageNum}&nbsp;
+					            </c:if>
+					            <c:if test="${pageNum != spage}">
+					                <a href='./directQList?c_idx=${c_idx}&page=${pageNum}&c_num=${param.c_num}'>${pageNum}&nbsp;</a>
+					            </c:if>
+					        </c:forEach>
+					        <c:if test="${spage<maxPage }">
+					        	<a href='./directQList?c_idx=${c_idx}&page=${spage+1}&c_num=${param.c_num}'>[다음]</a>
+					        </c:if>
+					        <c:if test="${endPage < maxPage }">
+					            <a href='./directQList?c_idx=${c_idx}&page=${endpage}&c_num=${param.c_num}'>[끝]</a>
+					        </c:if> 				        
+					    </div>
+		    	
+	    		 	</c:when>
+	    		 	<c:otherwise>
+	    		 		<h1>로그인 후 이용 가능합니다.</h1>
+	    		 	</c:otherwise>
+	    		</c:choose>
+	
+	</body>
+	<script type="text/javascript">
+		var rating = "${sessionScope.loginRating}";
+		
+		function directQDetail(b_idx){
+			location.href="./directQDetail?c_idx=${param.c_idx}&c_num=${param.c_num}&b_idx="+b_idx+"";
+		}
+		$(document).ready(function(){
+			if(rating == ""){
+				alert("로그인이 필요한 서비스 입니다.");
+				$("#toggle-sidebar").trigger("click");
+			}
+		});
+	</script>
+</html>

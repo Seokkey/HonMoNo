@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="real_project_2018_03_14_14_13">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <property name="context-root" value="real_project_2018_03_14_14_13"/>
+        <property name="java-output-path" value="/real_project_2018_03_14_14_13/real_project/target/classes"/>
+    </wb-module>
+</project-modules>

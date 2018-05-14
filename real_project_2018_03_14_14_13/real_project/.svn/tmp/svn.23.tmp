@@ -1,0 +1,101 @@
+package com.project.honMoNo;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.CategoryDto;
+import com.project.service.CategoryService;
+
+@Controller
+public class CateController {
+	
+	@Autowired
+	private CategoryService cs;
+	
+	@RequestMapping(value = "/subcategorylist",  produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<CategoryDto>>subcategorylist(CategoryDto categorydto){		
+		System.out.println("사이드바 카테고리 : "+categorydto.getC_num());
+		int cnum=categorydto.getC_num();
+		Map<String,List<CategoryDto>> subMap = cs.getSubCate(cnum);
+		System.out.println(subMap);
+		return subMap;	
+	}	
+	
+	//중분류 카테고리 리스트
+		@RequestMapping(value = "/subCateList", method = RequestMethod.GET)
+		public ModelAndView subCateList(CategoryDto categorydto) {	
+			System.out.println("c_num : " +categorydto.getC_num());
+			System.out.println("c_name : "+categorydto.getC_name());
+			String page="";
+			int c_idx =0;
+			
+			ModelAndView mav = new ModelAndView();
+			
+			switch (categorydto.getC_num()) {
+			case 0:			
+				page="event/noticeView";
+				c_idx=6;
+				break;
+				
+			case 1:
+				page="estimate/estimatePage";
+				c_idx=8;
+				break;
+				
+			case 2:			
+				page="used/usedGuide";
+				c_idx=12;
+				break;
+				
+			case 3:			
+				page="shop/shopGuide";
+				c_idx=16;
+				break;
+
+			case 4:			
+				page="QnA/faq";
+				c_idx=20;
+				break;
+
+			default:
+				
+				break;
+			}
+			
+			mav.addObject("c_idx", c_idx);
+			mav.addObject("categorydto", categorydto);
+			mav.setViewName(page);	
+			return mav;
+		}	
+	/*@RequestMapping(value = "/lowCateList",  produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<CategoryDto>>lowCateList(CategoryDto categorydto){		
+		System.out.println("사이드바 하위 카테고리 : "+categorydto.getC_num()+" // "+categorydto.getC_name());				
+		Map<String,List<CategoryDto>> lowcateMap = cs.getLowCate(categorydto);
+		System.out.println(lowcateMap);
+		return lowcateMap;	
+	}*/
+		
+		//즐겨찾기 추가하기
+		@RequestMapping(value = "/faAdd", method = RequestMethod.GET)
+		public ModelAndView faAdd(CategoryDto categorydto) {
+			System.out.println("즐겨 찾기 추가하기");
+			ModelAndView mav = new ModelAndView();
+			mav= cs.faAdd(categorydto);
+			return mav;
+		}
+		//즐겨찾기 삭제하기
+		@RequestMapping(value = "/faDel", method = RequestMethod.GET)
+		public ModelAndView faDel(CategoryDto categorydto) {
+			System.out.println("즐겨 찾기 삭제하기");
+			ModelAndView mav = new ModelAndView();
+			mav= cs.faDel(categorydto);
+			return mav;
+		}
+}

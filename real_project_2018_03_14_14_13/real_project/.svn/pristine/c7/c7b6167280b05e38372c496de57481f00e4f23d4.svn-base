@@ -1,0 +1,70 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+	<title>Main</title>
+	<style type="text/css">
+		#drawingBtn{
+			position:absolute;
+			background-color: gray;
+			height: 100px;
+			width: 100px;
+			top:400px;
+		}
+		#slideImage{
+			position:relative;
+			border:1px solid;
+			height: 250px;
+			width: 90%;
+		}
+		#moveLeft{
+			position:relative;
+			border:1px solid;
+			height: 60px;
+			width: 30px;
+			left: 7%;
+			top: 35%;
+		}
+		#moveRight{
+			position:relative;
+			border:1px solid;
+			height: 60px;
+			width: 30px;	
+			left: 88%;		
+			top: 10%;
+		}
+		#sidaBarTop{
+        	background-color: green;
+        }
+        #sideBar{
+        	float: left;
+        }
+	</style>
+</head>
+<body>
+	<br/><br/><br/>
+	
+	<%-- <c:if test="${sessionScope.loginId==admin1 }"></c:if> --%>
+	
+	<jsp:include page="memberLoginBox.jsp"/>
+	
+	<br/><br/>
+	<!-- <div id="slideImage">
+		<div id="moveLeft"></div>
+		<div id="moveRight"></div>
+	</div> -->
+	<br/>
+	<div id="drawingBtn">
+		우리집 도면 그려보기
+	</div>
+	
+</body>
+
+<script type="text/javascript">
+	$("#drawingBtn").click(function() {
+		location.href="./planDrawingWrite"
+	});
+</script>
+</html>

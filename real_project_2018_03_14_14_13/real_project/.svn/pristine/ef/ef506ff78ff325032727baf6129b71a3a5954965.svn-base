@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.CategoryDao">
+	<select id="getMaincategory" resultType="categorydto">
+		SELECT * FROM category WHERE c_group='high'
+	</select>
+	
+	<select id="noticeIdx" parameterType="int" resultType="int">
+		SELECT min(c_idx) FROM category WHERE c_num=#{cnum} and c_group='middle'
+	</select>
+	
+	<select id="noticeList" parameterType="int" resultType="boarddto">
+		SELECT * FROM board WHERE c_idx=#{noticeidx}
+	</select>	
+	<select id="getSubcategory" parameterType="int" resultType="categorydto">
+		SELECT * FROM category WHERE  c_num=#{cnum}	
+	</select>
+</mapper>

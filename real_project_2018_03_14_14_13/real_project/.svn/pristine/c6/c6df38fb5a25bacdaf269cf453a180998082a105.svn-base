@@ -1,0 +1,86 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>매장 등록 폼</title>
+	</head>
+	<body>	
+		<p>매장 등록 하기<p>
+		<form>	
+		<table>			
+			<tr>
+				<td>브랜드 : 
+					<select name="brandCategorize">
+						<option value="">브랜드 선택</option>
+					    <option value="시몬스">시몬스</option>
+					    <option value="에이스">에이스</option>
+					    <option value="템퍼">템퍼</option>
+					    <option value="한샘">한샘</option>
+					    <option value="리바트">리바트</option>
+					    <option value="에몬스">에몬스</option>
+					    <option value="기타 브랜드">기타 브랜드</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+			<tr>
+				<td>매장명 :  <input type="text"> </td>
+			</tr>
+			<tr>
+				<td>주소 :  <input type="text"> </td>
+			</tr>
+			<tr>
+				<td>연락처 :  <input type="text"> </td>				
+			</tr>
+			<tr>
+				<td>운영시간 :  <input type="text"> </td>				
+			</tr>
+			<tr>
+				<td>휴무일 : <input type="text"> </td>			
+			</tr>
+			<tr>
+				<td>주 제품군 : <input type="text"> </td>
+			</tr>
+			<tr>
+				<td>매장 소개 : 
+					<textarea>
+	                </textarea> 
+	            </td>
+			</tr>
+			<tr>
+				<td>매장 전시 제품 목록 :
+					 <textarea>
+	                </textarea> 
+	            </td>
+			</tr>
+			<tr>
+				<td>매장 대표 사진 : 
+					<button onclick="location.href='#'">첨부</button>
+					<button onclick="location.href='#'">삭제</button> 
+				</td>			
+			</tr>
+			<tr>
+				<td>└ 첨부한 사진 한개만<td>
+			</tr>
+			<tr>
+				<td>매장 내부 사진 : 
+					<button onclick="location.href='#'">첨부</button>
+					<button onclick="location.href='#'">삭제</button>
+				</td>			
+			</tr>
+			<tr>
+				<td>└ 첨부한 사진1, 사진2, 사진3....</td>
+			</tr>
+		</table>
+		</form>
+		<input type="submit" value="등록">
+		<button onclick="location.href='#'">취소</button>	
+	</body>
+	<script>
+	</script>
+</html>

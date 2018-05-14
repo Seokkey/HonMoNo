@@ -1,0 +1,50 @@
+package com.project.dto;
+
+//사진저장
+public class PhotoDto {
+	
+	private int p_idx;//파일번호
+	private int b_idx;//게시글 번호
+	private String p_oriname;//원래 파일 이름
+	private String p_newname;//저장된 파일 이름
+	private String p_path;//사진 경로
+	private String p_thum;//썸네일인지 구분
+	
+	public int getP_idx() {
+		return p_idx;
+	}
+	public void setP_idx(int p_idx) {
+		this.p_idx = p_idx;
+	}
+	public int getB_idx() {
+		return b_idx;
+	}
+	public void setB_idx(int b_idx) {
+		this.b_idx = b_idx;
+	}
+	public String getP_oriname() {
+		return p_oriname;
+	}
+	public void setP_oriname(String p_oriname) {
+		this.p_oriname = p_oriname;
+	}
+	public String getP_newname() {
+		return p_newname;
+	}
+	public void setP_newname(String p_newname) {
+		this.p_newname = p_newname;
+	}
+	public String getP_path() {
+		return p_path;
+	}
+	public void setP_path(String p_path) {
+		this.p_path = p_path;
+	}
+	public String getP_thum() {
+		return p_thum;
+	}
+	public void setP_thum(String p_thum) {
+		this.p_thum = p_thum;
+	}
+	
+}

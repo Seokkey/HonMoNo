@@ -1,0 +1,472 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+import com.project.dto.PhotoDto;
+import com.project.useClass.EvPaging;
+import com.project.useClass.NoticePaging;
+import com.project.useClass.UploadFile;
+
+@Service
+public class EvBoardService {
+
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private HttpServletRequest request;		
+	
+	private ModelAndView mav;
+	
+
+	@Autowired
+	UploadFile upload;
+	
+	//공지사항 리스트 불러오기
+	public ModelAndView noticeBoardList() {
+		System.out.println("서비스: 공지사항 리스트 불러오기");
+		mav=new ModelAndView();	
+		List<BoardDto> blist=null;
+		
+		String c_idx = request.getParameter("c_idx");
+		String searchtxt = request.getParameter("searchtxt");
+		String c_num = request.getParameter("c_num");
+		
+		System.out.println("파라미터로 받아온 idx:"+c_idx);
+		System.out.println("파라미터로 받아온 searchtxt:"+searchtxt);		
+		System.out.println("파라미터로 받아온 c_num:"+c_num);	
+		
+		//pagenum 이 널이 아니면 앞에 널이면 뒤에
+		int pageNum=(request.getParameter("pageNum")!=null) 
+				? Integer.parseInt(request.getParameter("pageNum")) : 1;	
+				System.out.println("pageNum="+pageNum);
+		
+				//검색이 아닐 때
+		if(searchtxt==null) {
+				System.out.println("검색 아님");
+				
+				HashMap<String, Integer> map = new HashMap<String, Integer>();
+				map.put("c_idx", Integer.parseInt(c_idx));
+				map.put("pageNum", pageNum);
+				blist=bDao.noticeBoardList(map);
+				
+				String blistHtml=makeHtmtBlist(blist, c_idx, c_num);								
+				
+				mav.addObject("blist", blistHtml);
+				mav.addObject("paging",getPaging(pageNum,c_idx,searchtxt));
+				
+		}else {//게시판 번호 넘겨야함
+			System.out.println("검색 중");
+			System.out.println(pageNum);
+			System.out.println(c_idx);
+			System.out.println("텍스트 :"+searchtxt);
+			
+			HashMap<String, String> map = new HashMap<String, String>();
+		    map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+			map.put("c_idx", c_idx); // 게시판 이름*/		   
+		    map.put("searchtxt", searchtxt); //String 검색글씨		    		    
+		    System.out.println(map.size());
+		    System.out.println("페이지번호:"+map.get("pageNum"));
+		    System.out.println("검색내용 : "+map.get("searchtxt"));
+		    System.out.println("게시판 인덱스 : "+map.get("c_idx"));
+		    blist=bDao.noticeBoardSerchList(map);
+			
+		    String blistHtml=makeHtmtBlist(blist, c_idx, c_num);						
+		    
+			mav.addObject("blist", blistHtml);
+			mav.addObject("paging",getPaging(pageNum,c_idx,searchtxt));
+			
+		}		
+		mav.addObject("c_idx", bDao.noticeBoardName(c_idx));
+		
+		mav.setViewName("event/noticeView");
+		
+		return mav;
+	}
+	
+	//공지사항 페이징
+	private String getPaging(int pageNum,String c_idx, String searchtxt) { //현재 페이지 번호
+		System.out.println("페이징 메소드 실행");
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+		map.put("c_idx", c_idx); // 게시판 idx 		   
+	    map.put("searchtxt", searchtxt); //String 검색글씨	
+		
+	    int maxNum=bDao.noticeBoardCount(map); //게시글 총 갯수	
+		
+		int listCount=10; //한페이지의 글의 개수
+		int pageCount=5;  //한 그룹당 페이지 수
+		String boardUrl="noticeBoardList"; //페이징 처리해서 보낼 URL
+		NoticePaging paging = new NoticePaging(c_idx,maxNum,pageNum,listCount,pageCount,boardUrl,searchtxt);
+		return paging.makeHtmlPaging();
+	}
+	
+	//뷰 페이지에 리스트 출력 - 제목옆에 댓글 수 달기
+	private String makeHtmtBlist(List<BoardDto> blist, String c_idx, String c_num) {
+		System.out.println("게시글 html 출력 메소드");		
+		StringBuilder sb=new StringBuilder();			
+		if(blist.size()>0) {			
+			for(int i=0;i<blist.size();i++){
+				sb.append("<tr>");
+				sb.append("<td>공지</td>");
+				sb.append("<td>"
+						+ "<a href='./noticeDetail?b_idx="+blist.get(i).getB_idx()+"&c_idx="+c_idx+"&c_num=0'>"+blist.get(i).getB_subject()+"</a></td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_nick()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_date()+"</td>");
+			}
+		}else{
+			sb.append("<tr><td colspan='5'>등록된 게시물이 없습니다.</td></tr>");						
+		}
+		
+		return sb.toString();
+	}
+
+	//공지사항 글쓰기 폼 불러오기 메소드
+	public ModelAndView noticeWriteForm(CategoryDto categorydto) {
+		mav=new ModelAndView();
+		String c_idx = request.getParameter("c_idx");
+		System.out.println("categorydto c_idx : "+categorydto.getC_idx());
+		mav.addObject("boardName", bDao.noticeBoardName(c_idx)); //게시판 이름 가져오기
+		mav.addObject("categorydto", categorydto);
+		mav.setViewName("event/noticeWriteFrom");
+		
+		return mav;
+	}
+	
+	//공지사항 게시글 상세보기 메소드
+	public ModelAndView noticeDetail(CategoryDto categorydto) {
+		System.out.println("공지사항 상세보기 메소드");		
+		mav=new ModelAndView();		
+		BoardDto boarddto = new BoardDto();
+		int b_idx = Integer.parseInt(request.getParameter("b_idx"));
+		System.out.println("인덱스번호:"+b_idx);	
+		boarddto =bDao.noticeDetail(b_idx);
+		
+		mav.addObject("boarddto", boarddto);		
+		mav.addObject("categorydto", categorydto);		
+		mav.setViewName("event/noticeDetail");
+		return mav;
+	}
+	
+	//이벤트 게시판 리스트 호출
+	public ModelAndView evBoardList() {
+		System.out.println("서비스: 이벤트 리스트 불러오기");
+		mav=new ModelAndView();	
+		List<BoardDto> blist=null;
+		
+		String c_idx = request.getParameter("c_idx");
+		String c_num = request.getParameter("c_num");
+		
+		System.out.println("파라미터로 받아온 idx:"+c_idx);
+		System.out.println("파라미터로 받아온 c_num:"+c_num);	
+		
+		//pagenum 이 널이 아니면 앞에 널이면 뒤에
+		int pageNum=(request.getParameter("pageNum")!=null) 
+				? Integer.parseInt(request.getParameter("pageNum")) : 1;	
+				System.out.println("pageNum="+pageNum);
+		
+		//검색이 아닐 때
+		System.out.println("검색 아님");
+		
+		HashMap<String, Integer> map = new HashMap<String, Integer>();
+		map.put("c_idx", Integer.parseInt(c_idx));
+		map.put("pageNum", pageNum);
+		blist=bDao.evBoardList(map);
+		
+		String blistHtml=makeHtmtBlist2(blist, c_idx, c_num);								
+		
+		mav.addObject("blist", blistHtml);
+		mav.addObject("paging",getPaging2(pageNum,c_idx));
+			
+			
+		mav.addObject("c_idx", bDao.evBoardName(c_idx));
+		
+		mav.setViewName("event/eventList");
+		
+		return mav;
+	}
+	
+	//뷰 페이지에 이벤트 리스트 출력
+	private String makeHtmtBlist2(List<BoardDto> blist, String c_idx, String c_num) {
+		System.out.println("게시글 html 출력 메소드");		
+		StringBuilder sb=new StringBuilder();			
+		if(blist.size()>0) {			
+			for(int i=0;i<blist.size();i++){
+				sb.append("<div id='"+blist.get(i).getRnum()+"'><input type='hidden' value='^"+blist.get(i).getB_idx()+"^'/>");
+				sb.append("<a href='./evDetail?b_idx="+blist.get(i).getB_idx()+"&c_idx="+c_idx+"&c_num="+c_num+"'><div id=evMainImg'"+i+"' class='evMainImgAll'>이미지 들어갈 자리</div></a>");
+				sb.append("<<span class='evSubjectAll'>"+blist.get(i).getB_subject()+"</span>><br/>");
+				sb.append("기간:<span class='evDateAll'>"+blist.get(i).getEv_start()+"</span> ~ <span class='evDateAll'>"+blist.get(i).getEv_end()+"</span>");
+				sb.append("</div>");
+				
+			}
+		}else{
+			sb.append("<tr><td colspan='5'>등록된 게시물이 없습니다.</td></tr>");						
+		}
+		
+		return sb.toString();
+	}
+
+	// 페이징
+		private String getPaging2(int pageNum,String c_idx) { //현재 페이지 번호
+			System.out.println("페이징 메소드 실행");
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+			map.put("c_idx", c_idx); // 게시판 idx
+			
+		    int maxNum=bDao.noticeBoardCount(map); //게시글 총 갯수	
+			
+			int listCount=10; //한페이지의 글의 개수
+			int pageCount=5;  //한 그룹당 페이지 수
+			String boardUrl="evBoardList"; //페이징 처리해서 보낼 URL
+			EvPaging paging = new EvPaging(c_idx,maxNum,pageNum,listCount,pageCount,boardUrl);
+			return paging.makeHtmlPaging();
+		}
+		
+		//이벤트 글쓰기 폼 불러오기 메소드
+		public ModelAndView evWriteForm(CategoryDto categorydto) {
+			mav=new ModelAndView();
+			String c_idx = request.getParameter("c_idx");
+			System.out.println("categorydto c_idx : "+categorydto.getC_idx());
+			mav.addObject("boardName", bDao.evBoardName(c_idx)); //게시판 이름 가져오기
+			mav.addObject("categorydto", categorydto);
+			mav.addObject("c_idx", c_idx);
+			mav.setViewName("event/evWriteForm");
+			
+			return mav;
+		}
+		
+		
+		
+		//이벤트 게시글 상세보기 메소드
+		public ModelAndView evDetail(int b_idx) {
+			System.out.println("이벤트 상세보기 메소드");		
+			mav=new ModelAndView();		
+			
+			System.out.println("인덱스번호:"+b_idx);		
+			mav.addObject("boarddto", bDao.evDetail(b_idx));
+			
+			List<PhotoDto> photoList=bDao.evPhotoList(b_idx);
+			
+			if(photoList.size() !=0){
+				mav.addObject("photo", photoList);
+			}
+			
+			mav.addObject("categorydto", b_idx);
+			
+			mav.setViewName("event/evDetail");
+			return mav;
+		}
+		
+		//이벤트 글쓰기1
+		public ModelAndView evWrite(BoardDto boarddto, MultipartHttpServletRequest multi) {
+
+			mav= new ModelAndView();
+			System.out.println(boarddto.getFilechks());
+			System.out.println(boarddto.getSh_brand());		
+			
+			System.out.println("filechk : "+boarddto.getFilechk());
+			
+			String b_nick=(String) request.getSession().getAttribute("loginNick");
+			boarddto.setB_nick(b_nick);
+			System.out.println("bDao : "+ bDao);
+			int b = bDao.evBoardWrite1(boarddto);		
+			int u = -1 ;
+			int f= -1;
+			if(b == 1){
+				System.out.println("b_idx : "+boarddto.getB_idx());
+				u= bDao.evBoardWrite2(boarddto);
+			}	
+			
+			String inDate   = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+			System.out.println(inDate);
+			
+			if(boarddto.getFilechk() == 1 && u ==1){
+				List<MultipartFile> mf = multi.getFiles("imgfile");
+				int b_idx = boarddto.getB_idx();
+				System.out.println("ㅇ파일 b_idx : "+b_idx);
+				f=upload.fileUp(multi,inDate,b_idx,mf);			
+			}
+			if(boarddto.getFilechks() == 3 && u ==1){
+				List<MultipartFile> mf = multi.getFiles("imgfile1");
+				int b_idx = boarddto.getB_idx();
+				System.out.println("ㅇ파일 b_idx : "+b_idx);
+				f=upload.fileUp(multi,inDate,b_idx,mf);		
+			}
+			
+			String view="";
+			if(f == 1 && u==1){
+				view="redirect:/listCall";
+				System.out.println("쿠퀘퀘퀘퀘퀘");
+			}else{
+				view="event/evWriteForm";
+			}
+			mav.setViewName(view);
+			return mav;
+		}
+
+		//이벤트 수정하기
+		public ModelAndView evUpdate(BoardDto boarddto, MultipartHttpServletRequest multi) {
+			String view="";
+			mav= new ModelAndView();
+			System.out.println(boarddto.getFilechks());
+			System.out.println(boarddto.getSh_brand());		
+			
+			System.out.println("filechk : "+boarddto.getFilechk());
+			System.out.println("filechks : "+boarddto.getFilechks());
+			
+			String b_nick=(String) request.getSession().getAttribute("loginNick");
+			boarddto.setB_nick(b_nick);
+			System.out.println("bDao : "+ bDao);
+			int b = bDao.evUpdate(boarddto);		
+			int u = -1 ;
+			int f= -1;
+			int d = 0;
+			if(b == 1){
+				System.out.println("b_idx : "+boarddto.getB_idx());
+				u= bDao.evsUpdate(boarddto);
+			}	
+			
+			String inDate   = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+			System.out.println(inDate);
+			System.out.println(boarddto.getFilechk()+"//////"+boarddto.getFilechks());
+			int b_idx = boarddto.getB_idx();
+			if(boarddto.getFilechk() == 4 && boarddto.getFilechks() == 5){
+				System.out.println("둘다");
+				d=bDao.fileDel(b_idx);
+				if(boarddto.getFilechk() == 4){
+					System.out.println("둘다밑에 대표");
+					if(d!=0){
+						List<MultipartFile> mf = multi.getFiles("imgfile");			
+						System.out.println("ㅇ파일 b_idx : "+b_idx);
+						f=upload.fileUp(multi,inDate,b_idx,mf);						
+					}	
+				}
+				if(boarddto.getFilechks() == 5){
+					System.out.println("둘다밑에 매장");
+					if(d!=0){
+						List<MultipartFile> mf = multi.getFiles("imgfile1");			
+						System.out.println("ㅇ파일 b_idx : "+b_idx);
+						f=upload.fileUp(multi,inDate,b_idx,mf);	
+					}
+				}
+				if(f == 1 && u==1){
+					view="redirect:/evDetail";
+					System.out.println("쿠퀘퀘퀘퀘퀘");
+				}else{
+					view="redirect:/evUpdateForm";
+				}
+			}
+			else if(boarddto.getFilechk() == 1 && boarddto.getFilechks() == 5){
+				System.out.println("매장만");
+				d=bDao.fileDeln(b_idx);
+				if(d!=0){
+					List<MultipartFile> mf = multi.getFiles("imgfile1");			
+					System.out.println("ㅇ파일 b_idx : "+b_idx);
+					f=upload.fileUp(multi,inDate,b_idx,mf);	
+				}	
+				if(f == 1 && u==1){
+					view="redirect:/evDetail";
+					System.out.println("쿠퀘퀘퀘퀘퀘");
+				}else{
+					view="redirect:/evUpdateForm";
+				}
+			}
+			else if(boarddto.getFilechk() == 4  && boarddto.getFilechks() == 3){
+				System.out.println("대표만");
+				d=bDao.fileDelthum(b_idx);
+				if(d!=0){
+					List<MultipartFile> mf = multi.getFiles("imgfile");			
+					System.out.println("ㅇ파일 b_idx : "+b_idx);
+					f=upload.fileUp(multi,inDate,b_idx,mf);						
+				}	
+				if(f == 1 && u==1){
+					view="redirect:/evDetail";
+					System.out.println("쿠퀘퀘퀘퀘퀘");
+				}else{
+					view="redirect:/evUpdateForm";
+				}
+			}
+			else{
+				System.out.println("둘다 안바 꿔");			
+				if( u==1){
+					view="redirect:/evDetail";
+					System.out.println("쿠퀘퀘퀘퀘퀘");
+				}else{
+					view="redirect:/evUpdateForm";
+				}
+			}
+							
+			
+			mav.addObject("b_idx",b_idx);
+			mav.setViewName(view);
+			return mav;
+		}
+
+		public ModelAndView evbsDel() {
+			int b_idx  = Integer.parseInt(request.getParameter("b_idx"));
+			
+			String view="";
+			int success = bDao.evDel(b_idx);
+			if(success != 0){
+				view="redirect:/listCall";
+				System.out.println("쿠퀘퀘퀘퀘퀘");
+			}else{
+				view="event/evDeatil";
+			}
+			mav.setViewName(view);
+			return mav;
+		}
+
+		//공지 글쓰기
+		public ModelAndView noticeBoardWrite(BoardDto boarddto) {
+			String b_nick=(String) request.getSession().getAttribute("loginNick");
+			boarddto.setB_nick(b_nick);
+			int success = bDao.boardWrite(boarddto);
+			if(success==1){
+				mav.setViewName("redirect:/listCall");
+			}else{
+				mav.setViewName("event/noticeView");
+			}
+			return mav;
+		}
+
+		//공지 수정
+		public ModelAndView noticeUpdate(BoardDto boarddto) {
+			String b_nick=(String) request.getSession().getAttribute("loginNick");
+			boarddto.setB_nick(b_nick);
+			
+			int success = bDao.noticeUpdate(boarddto);
+			if(success == 1){
+				mav.setViewName("redirect:/noticeDetail");
+			}else{
+				mav.setViewName("redirect:/noticeUpdateForm");
+			}
+			mav.addObject("b_idx", boarddto.getB_idx());
+			return mav;
+		}
+
+		//공지삭제
+		public ModelAndView noticeDel() {
+			int b_idx = Integer.parseInt(request.getParameter("b_idx"));
+			int success=bDao.noticeDel(b_idx);
+			if(success == 1){
+				mav.setViewName("redirect:/listCall");
+			}else{
+				mav.setViewName("redirect:/noticeDetail");
+			}
+			return mav;
+		}
+		
+}

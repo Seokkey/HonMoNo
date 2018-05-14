@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+
+	<select id="listcount" parameterType="map" resultType="int">
+		<choose>			
+			<when test="area == null and product == null and keyword == null and search == null">
+				SELECT COUNT(*) FROM vw_used WHERE c_idx=#{c_idx}
+			</when>
+			<when test="keyword==writer">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_used 
+				WHERE c_idx=#{c_idx}) WHERE u_product LIKE '%'||#{product}||'%' AND u_area LIKE  '%'||#{area}||'%') WHERE b_nick LIKE '%'||#{keyword}||'%'
+			</when>
+			<when test="keyword==sub">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_used 
+				WHERE c_idx=#{c_idx}) WHERE u_product LIKE '%'||#{product}||'%' AND u_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{keyword}||'%'
+			</when>
+			<otherwise>
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM vw_used 
+				WHERE c_idx=#{c_idx}) WHERE u_product LIKE '%'||#{product}||'%' AND u_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{keyword}||'%' AND b_content LIKE '%'||#{keyword}||'%'
+			</otherwise>
+		</choose>		
+	</select>
+	<select id="usedList" parameterType="map" resultType="BoardDto">
+	
+	<if test="area == null and product == null and keyword == null and search == null">
+			SELECT *FROM (
+					 SELECT ROW_NUMBER() OVER(ORDER BY b_idx DESC) 
+					 AS rnum, u_brand,u_area,u_bors,u_product,b_idx, b_nick, b_subject, b_date, b_Hit,(SELECT COUNT(*) FROM reply r, board b WHERE r.b_idx = b.b_idx) AS rcount 
+					 FROM vw_used	WHERE c_idx=#{c_idx}
+	<if test="keyword != null">
+	  <choose>
+	  	<when test="keyword == writer"> AND b_nick LIKE '%'||#{keyword}||'%'</when>
+	  	<when test="keyword == sub">AND b_subject LIKE '%'||#{keyword}||'%'</when>
+	  	<otherwise>AND b_subject LIKE '%'||#{keyword}||'%' AND b_content LIKE '%'||#{keyword}||'%'</otherwise>
+	  </choose>
+	</if>         
+	  </if>
+	 		 
+	 )WHERE<![CDATA[ rnum>=#{start}*10-9 and rnum<=#{start}*10]]> 
+	</select>
+	
+	<select id="getProduc" parameterType="int" resultType="String">
+		SELECT c_name FROM category WHERE c_idx=#{c_idx}	
+	</select>
+	
+	
+	<insert id="useWrite" parameterType="BoardDto" useGeneratedKeys="true" keyProperty="b_idx">
+		INSERT INTO board(b_idx,c_idx,b_nick,b_subject,b_content,b_hit,b_date) 
+		VALUES(SEQ_BIDX.NEXTVAL,#{c_idx},'aaa',#{b_subject},#{b_content},0,sysdate)
+			<selectKey keyProperty="b_idx" order="AFTER" resultType="int">
+				SELECT SEQ_BIDX.CURRVAL FROM DUAL
+			</selectKey>
+	</insert>
+	
+	<insert id="usedWrite" parameterType="BoardDto">
+		INSERT INTO used(b_idx,u_area,u_product,u_brand,u_safety,u_bors) 
+		VALUES(#{b_idx},#{u_area},#{u_product},#{u_brand},#{u_safety},#{u_bors})	
+	</insert>
+	<insert id="fileInsert" parameterType="Map">
+		INSERT INTO photo(p_idx,b_idx,p_oriname,p_newname,p_path)
+		VALUES(SEQ_PIDX.NEXTVAL,#{b_idx},#{oriFileName},#{sysFileName},#{realPath})
+	</insert>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

@@ -1,0 +1,85 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>견적 수정 폼</title>
+	</head>
+	<body>	
+		<p>견적 문의하기<p>	
+		<form>
+		<table>
+			<tr>				
+				<td>브랜드 : 브랜드 자동입력 칸 </td>
+			</tr>
+			<tr>
+				<td>제품 분류 :  
+					<select name="furnitureCategorize">
+						<option value="">등록 시 선택했던 가구</option>
+					    <option value="침대">침대</option>
+					    <option value="쇼파">쇼파</option>
+					    <option value="의자">의자</option>
+					    <option value="장롱">장롱</option>
+					    <option value="책상">책상</option>
+					    <option value="식탁">식탁</option>
+					    <option value="기타">기타</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>제목 : <input type="text" value="등록했던 제목"> </td>				
+			</tr>
+			<tr>
+				<td>사진 첨부 : 
+					<button onclick="location.href='#''">첨부</button>
+					<button onclick="location.href='#''">삭제</button>
+				</td>											
+			</tr>
+			<tr>
+				<td>└ 첨부했던 사진1, 사진2, 사진3....</td>
+			</tr>
+			<tr>
+				<td>내용 : <br/>
+					<textarea>
+						등록했던 내용
+	                </textarea> 
+	             </td>
+				
+			</tr>
+			<tr>
+				<td>배송희망일 : <button onclick="location.href='#''">등록했던 날짜 표시 누르면 수정</button></td>				
+			</tr>
+			<tr>
+				<td>배송지역 :
+					<select name="area">
+						<option value="">등록 시 선택한 지역 </option>
+					    <option value="서울">서울</option>
+					    <option value="인천">인천</option>
+					    <option value="대전">대전</option>
+					    <option value="대구">대구</option>
+					    <option value="부산">부산</option>
+					    <option value="울산">울산</option>
+					    <option value="광구">광주</option>
+					    <option value="충북">충북</option>
+					    <option value="충남">충남</option>
+					    <option value="경북">경북</option>
+					    <option value="경남">경남</option>
+					    <option value="전북">전북</option>
+					    <option value="전남">전남</option>
+					    <option value="제주">제주</option>
+					    <option value="도서산간">도서산간</option>
+					</select>	
+				 </td>
+			</tr>
+		</table>
+		</form>
+		<input type="submit" value="수정">
+		<button onclick="location.href='#'">취소</button>			
+	</body>
+	<script>
+	</script>
+</html>

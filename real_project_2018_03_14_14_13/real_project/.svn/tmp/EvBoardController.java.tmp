@@ -1,0 +1,46 @@
+package com.project.honMoNo;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+<<<<<<< .mine
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+||||||| .r81
+=======
+>>>>>>> .r112
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+import com.project.service.EvBoardService;
+
+@Controller
+public class EvBoardController {
+	
+	
+<<<<<<< .mine
+||||||| .r81
+=======
+	//공지사항 리스트.
+	@RequestMapping(value = "/noticeList",  produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<BoardDto>> noticeList(CategoryDto cdto) {
+		
+		System.out.println("c_idx : "+cdto.getC_idx());
+		
+		Map<String,List<BoardDto>> nListMap=ebs.noticeList(cdto.getC_idx());
+		System.out.println(nListMap);
+		return nListMap;
+	}
+>>>>>>> .r112
+	
+}

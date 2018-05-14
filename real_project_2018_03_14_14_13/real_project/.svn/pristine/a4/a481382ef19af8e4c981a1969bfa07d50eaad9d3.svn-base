@@ -1,0 +1,168 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<html>
+<style>
+body { /* margin: 0; */ }
+		.zeta-menu-bar {
+		  border: 1px solid;
+		  background: lightgreen;
+		  display: inline-block;
+		  
+		  margin: 10px 10px;
+		  width: 160px;
+		}
+		.zeta-menu { margin: 0; padding: 0; }
+		.zeta-menu li {
+		  float: none;
+		  list-style:none;
+		  position: relative;
+		}
+		/* .zeta-menu li:` { background: pink; } */
+		.zeta-menu li.expand { background: white; }
+		.zeta-menu li.expand>button { color: hotpink; }
+		.zeta-menu button {
+		  color: white;
+		  display: block;
+		  padding: 10px 20px;
+		  text-decoration: none;
+		}
+		.zeta-menu ul {
+		  background: #eee;
+		  border: 1px solid silver;
+		  display: none;
+		  padding:10px 10px;
+		  position: absolute;
+		  left:100%;
+		  top: 0%;
+		  
+		  width: 180px;
+		  
+		}
+		.zeta-menu ul li { float: left; }
+		.zeta-menu ul li.expand { background: #ddd; }
+		.zeta-menu ul li.expand button{ color: black; }
+		.zeta-menu ul button { color: black; }
+		.zeta-menu ul ul { left: 100%; top: 0; }
+
+</style>
+	 <body>
+    	<div class='zeta-menu-bar' id="test">
+    	</div>        
+    </body>
+    <script>
+   		var cnum = "${cnum}";
+    	$(document).ready(function(){
+    		$.ajax({
+    			url:'',
+    			data:{},
+    			dataType:'',
+    			success:function(data){
+    				console.log(data);
+    			},
+    			error:function(error){
+    				console.log(error)
+    			}   		
+    		})
+    	});
+		
+		$(function(){
+			$(document).mouseup(function(e) {
+				if ($(e.target).parents('.zeta-menu').length == 0) {
+					$('.zeta-menu li').removeClass('expand');
+					$('.zeta-menu ul').hide();
+				}
+			});
+			$(".zeta-menu>li:has(ul)>button").each( function() {
+				$(this).html( $(this).html()+' &or;' );
+			});
+			 $(".zeta-menu ul li:has(ul)")
+				.find("button:first")
+				.append("<p style='float:right;margin:-3px'>&#9656;</p>"); 
+		
+			 $(".zeta-menu li>button").click(function(){
+				var li = $(this).parent();
+				var ul = li.parent();
+				ul.find('li').removeClass('expand');
+				ul.find('ul').not(li.find('ul')).hide();
+				li.children('ul').toggle();
+				if( li.children('ul').is(':visible') || li.has('ul')) {
+					li.addClass('expand');
+				} 
+			});
+		});
+
+		
+		
+		/* var cnum = "${cnum}";
+		var contents="";
+		var content="";
+		
+		var cName =[];
+		
+		console.log("ㅇ,ㅇ"+cnum);
+	    $(document).ready(function() {
+	    	console.log("으ㅜ어ㅣ어이어ㅣ");
+	    	$.ajax({	
+	    		url:'subcategorylist',
+	    		data:{c_num:cnum},
+				dataType:'json',
+				success:function(data){
+					console.log(data);
+					console.log(data.subList.length);
+					
+					contents = "<ul class='zeta-menu'>";					
+					for(var i =0;i<data.subList.length;i++){						
+						contents +="<br><li name='cate"+i+"' ><button onclick='javascript:please(this)' id="+data.subList[i].c_name+" name='"+i+"'>"+data.subList[i].c_name+"</button></li>";							
+					
+						cName.push(data.subList[i].c_name);
+						
+						console.log("cName : "+cName[i]);
+						
+					}					
+					contents +="</ul>";
+					$("#test").append(contents);			
+					
+					
+				},
+				error:function(error){
+					alert('error');
+					console.log(error);
+				}    	
+		 });
+	    });
+	     */
+	  /*   
+	  	function please(e){
+	  		console.log(e);
+	  		 var c_name=e.getAttribute('id');
+	  		 var idx =e.getAttribute('name');
+	  		 console.log("idx : "+idx);
+	  		 
+	  		console.log(c_name);
+	     	$.ajax({
+	    		type:'get',
+	    		url:'lowCateList',
+	    		data:{c_num:cnum,c_name:c_name},
+	    		dataType:'json',
+	    		success:function(data){
+	    			console.log(data);	    		
+	    			content ="<ul>";
+	    			for(var i =0;i<data.lowList.length;i++){
+	    				content +="<br><li><button onclick='#'>"+data.lowList[i].c_name+"</button></li><br>";
+	    			}
+	    			content +="</ul>";
+	    			
+	    			$("[name='cate"+idx+"']").html("<button onclick='javascript:please(this)' id="+cName[idx]+" name='"+i+"'>"+cName[idx]+"</button>");
+	    			
+	    			$("[name='cate"+idx+"']").append(content);
+	    		},
+	    		error:function(error){
+	    			alert('error');
+	    			console.log(error);
+	    		}    	
+	    
+	    	});  
+	    };   */  
+	    
+    </script>
+</html>

@@ -1,0 +1,49 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Insert title here</title>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <style></style>
+    </head>
+    <body>
+        <jsp:include page="../memberLoginBox.jsp"/>
+			<h1>공지사항 상세보기</h1>
+		<jsp:include page="../mdgroupSideBar.jsp"/>
+		
+		<table>
+			<tr>
+				<td> 제목 : ${boarddto.b_subject}</td>
+			</tr>
+			<tr>
+				<td> 내용 : ${boarddto.b_content}</td>
+			</tr>
+		
+		
+	
+		</table>
+	
+		<c:if test="${sessionScope.loginNick ==  boarddto.b_nick}">
+			<button onclick="location.href='javascript:noticeUpdateForm()'">수정</button>					
+		</c:if>	
+		
+		<c:if test="${sessionScope.loginNick ==  boarddto.b_nick}">
+			<button onclick="location.href='javascript:noticeDel()'">삭제</button>					
+		</c:if>	
+		
+		<button onclick="location.href='./listCall?c_idx=${param.c_idx}&c_num=${param.c_num}'">목록</button>
+   
+    </body>
+    <script>
+    function noticeUpdateForm(){
+    	location.href="./noticeUpdateForm?c_idx=${param.c_idx}&c_num=${param.c_num}&b_idx="+${boarddto.b_idx}+"";
+    }
+    
+    function noticeDel(){
+    	location.href="./noticeDel?c_idx=${param.c_idx}&c_num=${param.c_num}&b_idx="+${boarddto.b_idx}+"";
+    }
+    </script>
+</html>

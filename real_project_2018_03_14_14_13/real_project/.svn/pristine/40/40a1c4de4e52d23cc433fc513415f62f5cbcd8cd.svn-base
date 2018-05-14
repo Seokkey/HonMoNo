@@ -1,0 +1,30 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+
+import com.project.dao.CategoryDao;
+import com.project.dto.CategoryDto;
+
+@Service
+public class CategoryService {
+
+	@Autowired
+	CategoryDao cDao;
+
+	public Map<String, List<CategoryDto>> getMainCate() {
+		List<CategoryDto> clist = cDao.getMaincategory();
+
+		Map<String, List<CategoryDto>>cMap=new HashMap<String ,List<CategoryDto>>();
+		cMap.put("clist",clist);
+		System.out.println("cMap : "+ cMap);
+		return cMap;
+	}
+	
+}

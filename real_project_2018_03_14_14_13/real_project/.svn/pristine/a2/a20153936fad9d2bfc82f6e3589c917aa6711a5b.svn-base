@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.CategoryDao">
+	
+	<select id="getMaincategory" resultType="CategoryDto">
+		SELECT * FROM category WHERE c_group='high'
+	</select>
+	
+	<select id="noticeIdx" parameterType="int" resultType="int">
+		SELECT min(c_idx) FROM category WHERE c_num=#{cnum} AND c_group='middle'
+	</select>
+	
+	<select id="noticeList" parameterType="int" resultType="BoardDto">
+		SELECT * FROM board WHERE c_idx=#{noticeidx} AND b_display='y'
+	</select>	
+	<select id="getSubcategory" parameterType="int" resultType="CategoryDto">
+		SELECT * FROM category WHERE  c_num=#{cnum}	
+	</select>
+	
+	<select id="getFavorite" parameterType="map" resultType="int">
+		SELECT count(*) FROM favorite WHERE c_idx =#{c_idx} AND m_nick=#{b_nick}
+	</select>
+	
+	<insert id="faAdd" parameterType="map">
+		INSERT  INTO favorite(c_idx,m_nick) VALUES(#{c_idx},#{b_nick})
+	</insert>
+	
+	<delete id="faDel" parameterType="map">
+		DELETE FROM favorite WHERE c_idx=#{c_idx} AND m_nick=#{b_nick}
+	</delete>
+	
+	<!-- 안전거래 등록할 분류이름 가져오기 -->	
+	<select id="getProduct" parameterType="int" resultType="String">
+		SELECT c_name FROM category WHERE c_num =#{c_num} AND c_group='high'
+	</select>
+	
+	<!-- 안전거래 등록할 카테고리이름 가져오기 -->	
+	<select id="getMdgroup" parameterType="int" resultType="String">
+		SELECT c_mdgroup FROM category WHERE c_idx =#{c_idx}
+	</select>
+	
+	<!-- 안전거래 등록할 브랜드이름 가져오기 -->	
+	<select id="getBrand" parameterType="int" resultType="String">
+		SELECT c_name FROM category WHERE c_idx =#{c_idx}
+	</select>
+	
+	
+	<!-- 메시지 전송  -->
+	<insert id="sendMsg" parameterType="messageDto">
+		INSERT  INTO message VALUES(seq_msgidx.NEXTVAL, #{msg_recivenick}, #{msg_sendnick}, #{msg_content}, sysdate, #{msg_category}, DEFAULT, DEFAULT, #{b_idx}, DEFAULT)
+	</insert>	
+	
+	<!-- 공지 메시지 리스트 -->
+	<select id="messageNoticeList" parameterType="HashMap" resultType="MessageDto">
+		<![CDATA[
+		SELECT * FROM (SELECT ROWNUM AS rnum, msg_idx, msg_recivenick, msg_sendnick, msg_content, msg_date, msg_category, msg_check, msg_display, b_idx 
+						FROM(SELECT * FROM message WHERE msg_sendnick='관리자' AND msg_display='Y' AND msg_recivenick=#{messageDto.msg_recivenick}))
+						WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10 ORDER BY msg_date DESC
+			 ]]>
+	</select>
+	
+	<!-- 일반 메시지 리스트  -->
+	<select id="messageList" parameterType="HashMap" resultType="MessageDto">
+		<![CDATA[		
+			SELECT * FROM(SELECT ROWNUM AS rnum, msg_sendnick, msg_recivenick, msg_date, b_subject, b_idx FROM 
+                                (SELECT msg_sendnick, msg_recivenick, b_subject, b_idx, MAX(msg_date) AS msg_date FROM 
+                                (SELECT m.msg_recivenick, m.msg_sendnick, m.msg_date, m.msg_category, m.msg_display, m.b_idx, (SELECT b_subject from board WHERE b_idx = m.b_idx) AS b_subject FROM 
+                                (SELECT * FROM message WHERE msg_category=#{messageDto.msg_category} AND msg_display='Y')m WHERE msg_recivenick=#{messageDto.msg_recivenick} OR msg_sendnick=#{messageDto.msg_recivenick}) GROUP BY msg_sendnick, b_subject, b_idx, msg_recivenick)) WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10 ORDER BY msg_date DESC                                               					
+			 ]]>
+	</select>
+	
+	<!-- 공지 일때 검색 -->
+	<select id="messageSerchNoticeList" parameterType="HashMap" resultType="MessageDto">
+		SELECT * FROM (SELECT ROWNUM AS rnum, msg_idx, msg_recivenick, msg_sendnick, msg_content, msg_date, msg_category, msg_check, msg_display, b_idx 
+            FROM(SELECT * FROM(SELECT * FROM(SELECT * FROM message WHERE msg_sendnick='관리자' AND msg_display='Y' AND msg_recivenick=#{msg_recivenick})) 
+            WHERE msg_category LIKE '%'||#{category}||'%') 
+            			 	<choose>            			 		
+	            			    <when test="keyword.equals('content')">
+	            			    	<![CDATA[
+							      		WHERE msg_content LIKE '%'||#{searchtxt}||'%') WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+							      	]]>
+							    </when>
+							    <otherwise>
+								    <![CDATA[
+									   )WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10 ORDER BY msg_date DESC
+									 ]]>
+						    	</otherwise>						    						    
+						    </choose>	    
+	</select>	
+	
+	<!-- 공지 아닐때 검색 -->
+	<select id="messageSerchList" parameterType="HashMap" resultType="MessageDto">
+		SELECT * FROM(SELECT ROWNUM AS rnum, msg_sendnick, msg_recivenick, msg_date, b_subject, b_idx FROM 
+								(SELECT msg_sendnick, msg_recivenick, b_subject, b_idx, MAX(msg_date) AS msg_date FROM 
+								(SELECT m.msg_recivenick, m.msg_sendnick, m.msg_date, m.msg_category, m.msg_display, m.b_idx, (SELECT b_subject from board WHERE b_idx = m.b_idx) AS b_subject FROM 
+								(SELECT * FROM message WHERE msg_category=#{msg_category} AND msg_display='Y')m 
+								
+						      		 WHERE msg_recivenick=#{msg_recivenick} OR msg_sendnick=#{msg_recivenick}) WHERE msg_sendnick LIKE '%'||#{searchtxt}||'%' OR msg_recivenick LIKE '%'||#{searchtxt}||'%'
+						    	
+						    	<![CDATA[
+								GROUP BY msg_sendnick, b_subject, b_idx, msg_recivenick)) WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10 ORDER BY msg_date DESC				 
+							 	]]>
+	</select>
+	
+	<!-- 공지 카운트  -->
+	<select id="messageNoticeCount" parameterType="HashMap" resultType="int">
+		<choose>			
+			<when test="category == null and keyword == null and searchtxt == null">
+				SELECT COUNT(*) FROM message WHERE msg_sendnick='관리자' AND msg_display='Y' AND msg_recivenick=#{msg_recivenick}
+			</when>
+			<when test="keyword.equals('content')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM message WHERE msg_sendnick='관리자' AND msg_display='Y' AND msg_recivenick=#{msg_recivenick}) WHERE msg_category LIKE '%'||#{category}||'%') WHERE msg_content LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<otherwise>
+				SELECT COUNT(*) FROM(SELECT*FROM message WHERE msg_sendnick='관리자' AND msg_display='Y' AND msg_recivenick=#{msg_recivenick}) WHERE msg_category LIKE '%'||#{category}||'%'
+			</otherwise>
+		</choose>		
+	</select>
+	
+	<!-- 일반 쪽지 카운트  -->
+	<select id="messageListCount" parameterType="HashMap" resultType="int">
+		<choose>			
+			<when test="keyword == null and searchtxt == null and category == null">
+				SELECT COUNT(*) FROM (SELECT msg_sendnick, msg_recivenick FROM (SELECT * FROM message WHERE msg_category='${msg_category}' AND msg_display='Y') WHERE msg_recivenick=#{msg_recivenick} OR msg_sendnick=#{msg_recivenick} GROUP by msg_sendnick, msg_recivenick)
+			</when>
+			<otherwise>							
+				SELECT COUNT(*) FROM (SELECT msg_sendnick, msg_recivenick FROM (SELECT * FROM message WHERE msg_category='${msg_category}' AND msg_display='Y') WHERE msg_recivenick=#{msg_recivenick} OR msg_sendnick=#{msg_recivenick} GROUP by msg_sendnick, msg_recivenick) WHERE msg_sendnick LIKE '%'||#{searchtxt}||'%' OR msg_recivenick LIKE '%'||#{searchtxt}||'%'
+			</otherwise>			
+		</choose>		
+	</select>
+	
+
+	<!-- 메시지 상세보기 요청 -->
+	<select id="messageDetail" parameterType="MessageDto" resultType="MessageDto">
+		SELECT * FROM(SELECT * FROM message WHERE msg_recivenick = #{msg_recivenick} AND msg_sendnick =#{msg_sendnick} AND b_idx=#{b_idx} UNION SELECT * FROM message WHERE msg_recivenick=#{msg_sendnick} AND msg_sendnick =#{msg_recivenick} AND b_idx=#{b_idx}) ORDER BY msg_date DESC		
+	</select>
+
+	<!-- 웹소켓 메세지 카운트  -->	
+	<select id="countMsg" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM message WHERE msg_recivenick=#{loginNick} AND msg_check='N'		
+	</select>	
+
+	<!-- 공지 상세보기  -->
+	<select id="messageNoticeDetail" parameterType="messageDto" resultType="messageDto">
+		SELECT * FROM message WHERE msg_idx=#{msg_idx}		
+	</select>	
+	
+	<!-- 공지 쪽지 읽음 처리 -->	
+	<update id="msgNoticeReadCheck" parameterType="messageDto">
+	 	UPDATE message SET msg_check='Y' WHERE msg_idx=#{msg_idx}
+	</update>
+	<!-- 일반 쪽지 읽음 처리  -->
+	<update id="msgReadCheck" parameterType="messageDto">
+		UPDATE message SET msg_check='Y' WHERE msg_recivenick = #{msg_recivenick} AND msg_sendnick =#{msg_sendnick} AND b_idx=#{b_idx}
+	</update>
+	
+</mapper>

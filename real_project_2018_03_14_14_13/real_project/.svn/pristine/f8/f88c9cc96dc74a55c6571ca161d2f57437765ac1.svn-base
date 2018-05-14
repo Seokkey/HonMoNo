@@ -1,0 +1,78 @@
+package com.project.honMoNo;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.BoardDto;
+import com.project.service.EstiBoardService;
+
+@Controller
+public class EstiMateController {
+	
+	@Autowired
+	private EstiBoardService ebs;
+	
+	//견적문의 이용안내 페이지
+	@RequestMapping(value = "/estipage", method = RequestMethod.GET)
+	public ModelAndView estipage() {		
+		
+		System.out.println("견적문의 이용안내 페이지");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("estimate/estimatePage");
+		/*mav.addObject("estiCategoList", ?)*/
+		/*mav.addObject("estiBrandList", ?)*/
+		
+		return mav;
+	}		
+	
+	//견적문의 리스트 요청
+	@RequestMapping(value = "/estiBoardList", method = RequestMethod.GET)
+	public ModelAndView estiList() {		
+		
+		System.out.println("견적문의 리스트 요청");
+		ModelAndView mav = new ModelAndView();
+		mav=ebs.estiBoardList();
+		/*소분류 가져오기*/
+		
+		return mav;
+	}
+	
+	//견적문의 글쓰기폼 요청
+	@RequestMapping(value = "/estiWriteForm", method = RequestMethod.GET)
+	public ModelAndView estiWriteForm() {		
+		//세션체크 해야함
+		System.out.println("견적문의 글쓰기폼 요청");
+		ModelAndView mav = new ModelAndView();
+		mav=ebs.estiWriteForm();
+		return mav;
+	}
+	
+	//견적문의 상세보기 요청
+	@RequestMapping(value = "/estiDetail", method = RequestMethod.GET)
+	public ModelAndView estiDetail() {		
+		
+		System.out.println("견적문의 상세보기 요청");
+		ModelAndView mav = new ModelAndView();
+		mav=ebs.estiDetail();
+		
+		return mav;
+	}
+	
+	//견적문의 글 등록 요청
+	@RequestMapping(value = "/estiBoardWrite", method = RequestMethod.POST)
+	public ModelAndView estiBoardWrite(BoardDto board, MultipartFile[] b_files) throws IOException {		
+		//세션체크 해야함
+		System.out.println("견적문의 글 등록 요청");
+		ModelAndView mav = new ModelAndView();
+		mav=ebs.estiBoardWrite(board, b_files);
+		return mav;
+	}
+	
+	
+}

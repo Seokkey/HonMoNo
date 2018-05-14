@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.CategoryDao">
+	<select id="getMaincategory" resultType="CategoryDto">
+		SELECT * FROM category WHERE c_group='high'
+	</select>
+	
+	<select id="noticeIdx" parameterType="int" resultType="int">
+		SELECT min(c_idx) FROM category WHERE c_num=#{cnum} AND c_group='middle'
+	</select>
+	
+	<select id="noticeList" parameterType="int" resultType="BoardDto">
+		SELECT * FROM board WHERE c_idx=#{noticeidx} AND b_display='y'
+	</select>	
+	<select id="getSubcategory" parameterType="int" resultType="CategoryDto">
+		SELECT * FROM category WHERE  c_num=#{cnum}	
+	</select>
+	
+	<select id="getFavorite" parameterType="map" resultType="int">
+		SELECT count(*) FROM favorite WHERE c_idx =#{c_idx} AND m_nick=#{b_nick}
+	</select>
+	
+	<insert id="faAdd" parameterType="map">
+		INSERT  INTO favorite(c_idx,m_nick) VALUES(#{c_idx},#{b_nick})
+	</insert>
+	
+	<delete id="faDel" parameterType="map">
+		DELETE FROM favorite WHERE c_idx=#{c_idx} AND m_nick=#{b_nick}
+	</delete>
+	
+	<!-- 메시지 전송  -->
+	<insert id="sendMsg" parameterType="messageDto">
+		INSERT  INTO message VALUES(seq_msgidx.NEXTVAL, #{msg_recivenick}, #{msg_sendnick}, #{msg_content}, sysdate, #{msg_category}, DEFAULT, DEFAULT, #{b_idx)
+	</insert>
+	
+	<!-- 게시판 중분류 이름 가져오기 -->	
+	<select id="getMidgroupName" parameterType="int" resultType="String">
+		SELECT c_mdgroup FROM category WHERE c_num =#{c_num}
+	</select>
+	
+</mapper>

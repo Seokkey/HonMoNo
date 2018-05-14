@@ -1,0 +1,219 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>중고 거래 상세보기</title>
+	</head>
+	<body>	
+	 	<jsp:include page="../memberLoginBox.jsp"/>
+    	<jsp:include page="../mdgroupSideBar.jsp"/> 
+    	
+    	<table>
+		   	<tr>
+		   		<td>작성자</td>
+		   		<td>${boarddto.b_nick}</td>
+		   	</tr>	
+		   	<tr>
+		   		<td>브랜드</td>
+		   		<td>${boarddto.u_brand}</td>
+		   	</tr>
+		   	<tr>
+		   		<td>지역</td>
+		   		<td>${boarddto.u_area}</td>
+		   	</tr>
+		   	<tr>
+		   		<td>제품</td>
+		   		<td>${boarddto.u_product}</td>
+		   	</tr>		   
+		   	<tr>
+			   	<c:if test="${boarddto.u_safety == 'safe'}">
+			   			<td>안전거래</td>
+		   		</c:if>
+		   	</tr>
+		   	<tr>	
+		   		<td>제목</td>
+		   		<td>${boarddto.b_subject}</td>
+		   	</tr>
+	   		<tr>
+	   			<td>내용</td>
+	   			<td>${boarddto.b_content}</td>
+	   		</tr>
+  			<tr>
+  				
+   			<td>제품 사진</td>
+               	<c:forEach  items="${usedpholist}" var="usedpholist">
+               	
+                	<c:if test="${usedpholist.p_newname == null}">
+                		<td>제품 사진이 없습니다.</td>
+	                </c:if>
+	                <td>
+	                <c:if test="${usedpholist.p_newname != null}">		                
+		                
+		                		<img class="image" src="${usedpholist.p_path}${usedpholist.p_newname}"/>
+	              
+                	</c:if>
+                	  	</td>
+               	</c:forEach> 
+   			</tr>				 
+   			<tr>
+		   		<td><button onclick="javascript:deliveryWriteForm()">용달 신청하기</button></td>
+		   		
+		   	</tr>			   	
+    	</table>
+    		<br>
+    	<br>
+    	<table>
+    		<tr>				
+				<td align="right">
+				<c:if test="${sessionScope.loginNick ==  boarddto.b_nick}">
+					<button onclick="location.href='javascript:usedUpdateForm()'">수정</button>
+					
+				</c:if>
+				<c:choose>
+					<c:when test="${sessionScope.loginNick ==  boarddto.b_nick}">
+						<button onclick="location.href='javascript:usedDel()'">삭제</button>
+					</c:when>
+					<c:when test="${sessionScope. loginRating == 9}">
+						<button onclick="location.href='javascript:usedDel()'">삭제</button>
+					</c:when>
+				</c:choose>
+				<c:if test="${sessionScope.loginNick !=  boarddto.b_nick}">
+					<button onclick="location.href='#'">신고</button>
+				</c:if>	
+					<button onclick="location.href='./listCall?c_idx=${param.c_idx}&c_num=${param.c_num}'">목록</button>
+				</td>
+			</tr> 
+    	</table>
+    	<br>
+    	<br>
+    	<table><!-- 댓글 작성 테이블  -->
+			<tr>
+				<td><textarea id="comment" placeholder="댓글을 등록 해주세요. (2000자 이내)"></textarea></td>
+				<td><button onclick="replyInsert(${boarddto.b_idx})">댓글 등록</button></td> <!--로그인 검사 -->
+			</tr>
+		</table>
+		<br>
+		<br>
+    	<table id="rTable"><!-- 댓글 불러오기 테이블  -->			
+			<c:forEach var="usedreplylist" items="${usedreplylist}">
+				<tr>
+					<td>${usedreplylist.r_nick}</td>
+					<td>${usedreplylist.r_content}</td>
+					<td>${usedreplylist.r_date}</td>				
+										
+					<td>
+					<c:choose>
+						<c:when test="${usedreplylist.r_nick == sessionScope.loginNick }">
+							<a href="javascript:replyDel(${usedreplylist.r_idx})">삭제</a>
+						</c:when>
+						<c:when test="${boarddto.b_nick != sessionScope.loginNick }">
+							<a href="javascript:dealChoice(${sessionScope.loginNick})">채택하기</a>
+						</c:when>
+						<c:when test="${ sessionScope.loginNick eq null}">
+							없으
+						</c:when>
+					</c:choose>
+					</td>
+					
+				</tr>
+			</c:forEach>			
+		</table>
+			<br>
+    	<br>
+		
+	</body>
+	<script>
+		console.log("${usedreplylist}");
+		console.log("${usedpholist}");
+		console.log("${boarddto}");
+		console.log("${usedpholist[0].p_path}${usedpholist[0].p_newname}");
+		var nick="${sessionScope.loginNick}"; //세션 닉네임
+		var rating = "${sessionScope.loginRating}"; //세션 레이팅	
+		
+		//채택하기
+		function dealChoice(d_nick){
+			if(d_nick == null){
+				alert("로그인이 필요한 서비스 입니다.");
+				$("#toggle-sidebar").trigger("click");
+			} else{
+				/* location.href = "mesaageList?msg_recivenick="+d_nick+"&msg_sendnick="+r_nick+""; */
+				alert("잠만요");
+			} 
+		}
+		//댓글 삭제
+		function replyDel(r_idx){
+			$.ajax({
+				url:"replyDel",
+				type:"get",
+				data:{r_idx:r_idx,b_idx:"${boarddto.b_idx}"},
+				success:function(data){
+					window.location.reload();
+					/* var reply='';
+					for(var i=0;i<data.reply.length;i++){					
+						reply+='<tr>'
+							if(nick !=0){
+								 +'<td class="choose" ><button onclick=location.href="javascript:dealChoice('+data.reply[i].r_nick+')">채택하기</button></td></tr>'
+							}else if(nick == 0){
+							 +'<td class="choose" >로그인시 채택 할수 있습니다.</td></tr>'
+							}
+							else if(data.reply[i].r_nick == nick){
+								+'<td><a href="javascript:replyDel('+data.reply[i].r_idx+')">삭제</a></td></tr>'				
+							};
+					} */
+				},				
+				error:function(e){
+					alert('삭제실패')
+					}
+				
+			})
+			
+			
+		}
+		//게시글 수정
+		function usedUpdateForm(){
+			location.href="./usedUpdateForm?c_idx="+${param.c_idx}+"&c_num="+${param.c_num}+"&b_idx="+${boarddto.b_idx}+"";
+		}
+		//게시글 삭제
+		function usedDel(){
+			location.href="./usedDel?c_idx="+${param.c_idx}+"&c_num="+${param.c_num}+"&b_idx="+${boarddto.b_idx}+"";
+		}
+		
+		function replyInsert(b_idx){ //댓글 유효성검사, 댓글 삽입		
+		
+			var r_content= $('#comment').val(); //댓글 내용	
+			if(nick == ""){
+				alert("로그인이 필요한 서비스 입니다.");
+				$("#toggle-sidebar").trigger("click");
+			}else{					
+					console.log(r_content);
+					if(comment.length<1){
+						alert("댓글을 입력해 주세요.");
+					}else if(comment.length>2000){
+						alert("2000자 이내로 입력해 주세요.");
+					}else{
+						$.ajax({
+						url:'./usedReplyWrite',
+						data:{b_idx:b_idx,
+							  r_content:r_content,
+							  r_nick:nick
+						},
+						dataType:'json',
+						success:function(data){
+							window.location.reload();
+							
+						},
+						error:function(error){
+							alert('댓글 삽입 실패');
+							console.log(error);
+						}
+						});													
+				}		
+			}
+		}	
+	</script>
+</html>

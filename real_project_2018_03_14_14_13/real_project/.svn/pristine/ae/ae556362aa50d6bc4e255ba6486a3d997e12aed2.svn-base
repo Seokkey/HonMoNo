@@ -1,0 +1,19 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>     
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>견적문의</title>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	</head>
+	
+	<body>
+		<jsp:include page="../memberLoginBox.jsp"/>
+    	<jsp:include page="../mdgroupSideBar.jsp"/>
+		<%-- ${이용안내} --%>
+		게시판에 궁금한 제품 글 물어보면 판매자가 벌떼처럼 달려들어서 막 그냥
+				
+	</body>	
+</html>

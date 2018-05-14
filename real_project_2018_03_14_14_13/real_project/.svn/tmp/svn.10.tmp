@@ -1,0 +1,104 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dao.CategoryDao;
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+
+@Service
+public class EvBoardService {
+	
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private CategoryDao cDao;
+	
+	private ModelAndView mav;
+	
+	HttpServletRequest request;
+	//공지사항리스트
+	public Map<String, List<BoardDto>> noticeList(CategoryDto cdto) {
+		
+		System.out.println("테스트 cnum : "+cdto.getC_num());
+		int c_idx= cDao.noticeIdx(cdto.getC_num());
+		
+		System.out.println("cidx : "+ c_idx);
+		System.out.println("여긴가");
+		List<BoardDto> noticeList= bDao.noticeList(c_idx);
+		
+		Map<String, List<BoardDto>> noticeMap = new HashMap<String, List<BoardDto>>();
+		noticeMap.put("noticeList",noticeList);
+		System.out.println("noticeList : "+noticeMap);
+		
+		return noticeMap;
+	}
+
+	//중고거래 리스트
+	public ModelAndView usedboardList(Map<Object, Object> map) {
+		System.out.println("maaap : "+ map);
+		String page = null;
+		page = (String) map.get(page);
+		
+		//page는 현재 페이지 , spage는 현재 페이지 번호 만듬
+		 	 int spage=1 ;//   
+		 	 
+			 if(page !=null){
+				 spage = Integer.parseInt(page);
+			 }
+			 int start = spage*10-9;
+			
+		  //start는 dao에서 set string에 넣어주는데 한 페이지에 보여줄 게시물을 start , start+a 로 표현 
+
+		  // 한 화면에 10개의 게시글을 보여지게함
+		  // 페이지 번호는 총 10개, 이후로는 [다음]으로 표시	        
+		  // 전체 페이지 수
+			 //글개수
+			int listCount = bDao.listcount(map);//게시물 총 개수
+			System.out.println("usedlistCount : "+listCount);
+			
+			map.put("start",start);
+			System.out.println("map : " + map);
+			//리스트가져오기
+			List<BoardDto> usedboardList=bDao.usedList(map);
+			int countPage = 10;//한 화면에 보여질 페이지 개수
+		        int maxPage = (int)(listCount/10.0); //마지막 페이지
+		        if (listCount % 10 > 0) {
+		        	maxPage++;
+		        	};
+		        if (maxPage < spage) {
+		            spage = maxPage;
+		        	};
+		        //시작 페이지 번호
+		        int startPage = (int)((spage - 1) / 10) * 10 + 1;
+		        
+		        //한 화면에 보여지는 마지막 페이지 번호
+		        int endPage = startPage + countPage-1;
+		        if(endPage > maxPage) {
+		        	endPage = maxPage;
+		        };
+		
+		mav =  new ModelAndView();
+		mav.addObject("spage",spage);
+		mav.addObject("searchlist", map);		
+		mav.addObject("usedboardList", usedboardList);
+		
+		mav.addObject("maxPage", maxPage);
+		mav.addObject("startPage", startPage);
+		mav.addObject("endPage", endPage);
+		System.out.println("중고거래 리스트 보내는 리스트 : "+spage+"//"+usedboardList);
+		mav.setViewName("used/usedList");
+		return mav;
+	}
+	
+	
+}

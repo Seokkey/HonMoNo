@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+ 	<select id="noticeBoardList" parameterType="HashMap" resultType="BoardDto">
+		<![CDATA[
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, b_subject, b_nick, b_date, b_hit,(SELECT COUNT(*) FROM reply r, board b WHERE r.b_idx = b.b_idx) AS rcount 	
+						FROM(SELECT * FROM board WHERE c_idx=#{c_idx} ORDER BY b_idx DESC)) 
+						WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+			 ]]>
+	</select>
+	<select id="noticeBoardCount" parameterType="HashMap" resultType="int">
+		<choose>			
+			<when test="area == null and furnitureCategory == null and keyword == null and searchtxt == null">
+				SELECT COUNT(*) FROM board WHERE c_idx=#{c_idx}
+			</when>
+			<when test="keyword.equals('writer')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx})) WHERE b_nick LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<when test="keyword.equals('sub')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx})) WHERE b_subject LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<otherwise>
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx})) WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%'
+			</otherwise>
+		</choose>		
+	</select>
+	<select id="noticeBoardSerchList" parameterType="HashMap" resultType="BoardDto">
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, em_product, b_subject, b_content, b_nick, b_date, b_hit FROM(SELECT * FROM(SELECT * FROM(SELECT * FROM vw_notice WHERE c_idx=#{c_idx} ORDER BY b_idx DESC))) 
+            			 	<choose>
+            			    <when test="keyword.equals('writer')">
+						      	WHERE b_nick LIKE '%'||#{searchtxt}||'%'
+						    </when>
+						    <when test="keyword.equals('sub')">
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%'
+						    </when>
+						    <otherwise>
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%'
+						    </otherwise>						    
+						    </choose>
+						    <![CDATA[
+						    WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+						    ]]>
+	</select>
+	<select id="noticeDetail" parameterType="int" resultType="BoardDto">
+		SELECT * FROM board WHERE b_idx=#{b_idx}
+	</select>
+	<select id="noticePhotoList" parameterType="int" resultType="BoardDto">
+		SELECT * FROM photo WHERE b_idx=#{b_idx}
+	</select>	
+	<select id="noticeBoardName" parameterType="String" resultType="String">
+		SELECT c_name FROM category WHERE c_idx=#{c_idx}
+	</select>
+	
+</mapper>

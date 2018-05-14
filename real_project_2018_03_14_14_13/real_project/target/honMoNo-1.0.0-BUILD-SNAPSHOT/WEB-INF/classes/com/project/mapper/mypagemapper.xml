@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+ 	<select id="myFavoriteBbsCIdx" parameterType="String" resultType="int">
+		SELECT c_idx FROM favorite WHERE m_nick = #{m_nick}
+	</select> 
+	
+ 	<select id="myFavoriteBbsListChk" parameterType="String" resultType="int">
+		SELECT COUNT(c_idx) FROM favorite WHERE m_nick = #{m_nick}
+	</select> 	
+	
+	<select id="myTradeList1" parameterType="String" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_buyid = #{m_nick}
+	</select> 	
+	
+	<select id="myTradeList2" parameterType="String" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_sellid = #{m_nick}
+	</select>
+	
+	<select id="myTradeList3" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_state = '입금대기' OR sfd_state = '입금완료/배송준비중' OR sfd_state = '환불신청'
+	</select>
+	
+	<select id="detailPopUp" parameterType="int" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_idx = #{sfd_idx}
+	</select>	
+	
+	<select id="detailPopUpInfo" parameterType="int" resultType="SafeDealDto">
+		SELECT * FROM safedeal_info WHERE sfd_idx = #{sfd_idx}
+	</select>	
+	
+ 	<update id="dealUpdate1" parameterType="SafeDealDto">
+		UPDATE safedeal 
+			SET sfd_name = #{sfd_name}, sfd_dvdate=#{sfd_dvdate}, sfd_phone1=#{sfd_phone1}, sfd_phone2=#{sfd_phone2}, 
+				sfd_address1=#{sfd_address1}, sfd_address2=#{sfd_address2}, sfd_address3=#{sfd_address3}, sfd_sumprice=#{sfd_sumprice}, 
+				sfd_etccontract=#{sfd_etccontract}, sfd_dealdate=#{sfd_dealdate}, sfd_state='거래요청' 
+					WHERE sfd_idx = #{sfd_idx}
+	</update>
+	
+	<!-- 구매자가 정정요청때 수정완료했을시 판매자에게 알림 메시지 전송 -->
+	<insert id="dealUpdateMsg" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, #{sfd_buyid}, '구매자가 정정요청 받은 내용을 수정했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>	
+	
+	<!-- 판매자가 정정요청 눌렀을시 상태 정정요청으로 변경 -->
+	<update id="dealModifyCall" parameterType="int">
+		UPDATE safedeal SET sfd_state = '정정요청' WHERE sfd_idx = #{sfd_idx}
+	</update>	
+	
+	<!-- 판매자가 정정요청 눌렀을시 구매자에게 알림 메시지 전송 -->
+	<insert id="dealModifyCallMsg" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_buyid}, #{sfd_sellid}, '판매자가 정정요청을 했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>	
+	
+ 	<update id="dealUpdate2" parameterType="SafeDealDto">
+		UPDATE safedeal_info 
+			SET si_model = #{si_model}, si_size = #{si_size}, si_color = #{si_color}, 
+			si_amount = #{si_amount}, si_price = #{si_price}, si_note = #{si_note}
+	 			WHERE si_idx = #{si_idx}
+	</update>	
+	
+
+	<update id="dealCancel" parameterType="int">
+		UPDATE safedeal SET sfd_state = '취소 된 거래입니다' WHERE sfd_idx = #{sfd_idx}
+	</update>	
+	
+	<!-- 구매자가 거래취소 버튼 눌렀을시 판매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealBuyCancelMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 거래를 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+
+	<!-- 구매자가 거래취소 버튼 눌렀을시 관리자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealBuyCancelMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_buyid}, '구매자가 거래를 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+
+	<!-- 판매자가 거래취소 버튼 눌렀을시 구매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealSellCancelMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_buyid}, '관리자', '판매자가 거래를 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+
+	<!-- 판매자가 거래취소 버튼 눌렀을시 관리자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealSellCancelMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_sellid}, '판매자가 거래를 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 판매자가 환불수락 버튼 눌렀을시 관리자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelAgreeSell" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_buyid}, '관리자', '판매자가 환불을 수락했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<update id="dealCancelAgreeAdmin" parameterType="int">
+		UPDATE safedeal SET sfd_state = '환불 된 거래입니다' WHERE sfd_idx = #{sfd_idx}
+	</update>	
+	
+	<update id="payChk" parameterType="int">
+		UPDATE safedeal SET sfd_state = '입금완료/배송준비중' WHERE sfd_idx = #{sfd_idx}
+	</update>	
+	
+	<!-- 관리자가 입금완료 눌렀을시 판매자에게 알림 메시지 전송 -->
+	<insert id="payChkMsg" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 입금을 완료 했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>	
+	
+	<update id="dealCancelRequest" parameterType="int">
+		UPDATE safedeal SET sfd_state = '환불신청' WHERE sfd_idx = #{sfd_idx}
+	</update>
+	
+	<update id="dealConfirm" parameterType="int">
+		UPDATE safedeal SET sfd_state = '구매확정' WHERE sfd_idx = #{sfd_idx}
+	</update>
+	
+	<!-- 구매자가 구매확정 눌렀을시 판매자에게 알림 메시지 전송 -->
+	<insert id="dealBuyConfirmMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 구매확정 했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>	
+	
+	<!-- 구매자가 구매확정 눌렀을시 관리자에게 알림 메시지 전송 -->
+	<insert id="dealBuyConfirmMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_buyid}, '구매자가 구매확정 했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>	
+	
+	<update id="dealCancelCancel" parameterType="int">
+		UPDATE safedeal SET sfd_state = '입금완료/배송준비중' WHERE sfd_idx = #{sfd_idx}
+	</update>
+	
+	<!-- 구매자가 환불취소 버튼 눌렀을시 판매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelBuyCancelMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 환불을 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 구매자가 환불취소 버튼 눌렀을시 관리자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelBuyCancelMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_buyid}, '구매자가 환불을 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 관리자가 환불취소 버튼 눌렀을시 판매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelAdminCancelMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 환불을 취소했습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 관리자가 환불취소 버튼 눌렀을시 구매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelAdminCancelMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_buyid}, '관리자', '환불 취소가 완료되었습니다.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<insert id="dealInsert" parameterType="SafeDealDto" useGeneratedKeys="true" keyProperty="sfd_idx">
+		INSERT INTO safedeal(sfd_idx, b_idx, sfd_sellid, sfd_buyid, sfd_name, sfd_dvdate, sfd_phone1, sfd_phone2, sfd_address1, sfd_address2,
+		sfd_address3, sfd_sumprice, sfd_etccontract, sfd_dealdate, sfd_mdgroup, sfd_brand, sfd_state, sfd_product) 
+			VALUES(SEQ_SFDIDX.NEXTVAL, #{b_idx}, #{sfd_sellid}, #{sfd_buyid}, #{sfd_name}, #{sfd_dvdate}, 
+			#{sfd_phone1}, #{sfd_phone2}, #{sfd_address1}, #{sfd_address2}, #{sfd_address3}, 
+			#{sfd_sumprice}, DEFAULT, DEFAULT, #{sfd_mdgroup}, #{sfd_brand},DEFAULT, #{sfd_product})
+				<selectKey keyProperty="sfd_idx" order="AFTER" resultType="int">
+					SELECT SEQ_SFDIDX.CURRVAL FROM DUAL
+				</selectKey>
+	</insert>
+	
+	<insert id="dealInfoInsert1" parameterType="SafeDealDto">
+		INSERT INTO safedeal_info(si_idx, sfd_idx, si_model, si_size, si_color, si_amount, si_price, si_note) 
+			VALUES(seq_siidx.NEXTVAL, #{sfd_idx}, #{si_model}, #{si_size}, #{si_color}, #{si_amount}, #{si_price}, #{si_note})
+	</insert>
+	
+	<insert id="dealInfoInsert2" parameterType="SafeDealDto">
+		INSERT INTO safedeal_info(si_idx, sfd_idx, si_model, si_size, si_color, si_amount, si_price, si_note) 
+			VALUES(seq_siidx.NEXTVAL, #{sfd_idx}, #{si_model}, #{si_size}, #{si_color}, #{si_amount}, #{si_price}, DEFAULT)
+	</insert>
+	
+	<!-- 구매자가 환불신청 버튼 눌렀을시 판매자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelRequestMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_sellid}, '관리자', '구매자가 환불을 신청했습니다.', sysdate, '환불요청', DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 구매자가 환불신청 버튼 눌렀을시 관리자에게 보낼 메시지 데이터 입력 -->
+	<insert id="dealCancelRequestMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_buyid}, '구매자가 환불을 신청했습니다.', sysdate, '환불요청', DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<update id="dealAgree" parameterType="int">
+		UPDATE safedeal SET sfd_state = '입금대기' WHERE sfd_idx = #{sfd_idx}
+	</update>	
+	
+	<!-- 판매자가 거래수락 버튼 눌렀을시 메시지 보낼 데이터 입력 -->
+	<insert id="dealAgreeMsg1" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, #{sfd_buyid}, '관리자', '판매자가 거래를 수락했습니다. 입금해주세요.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+	
+	<!-- 판매자가 거래수락 버튼 눌렀을시 메시지 보낼 데이터 입력 -->
+	<insert id="dealAgreeMsg2" parameterType="SafeDealDto">
+		INSERT  INTO message(msg_idx,msg_recivenick,msg_sendnick,msg_content,msg_date,msg_category,msg_check,msg_display,b_idx) 
+			VALUES(seq_msgidx.NEXTVAL, '관리자', #{sfd_sellid}, '판매자가 거래를 수락했습니다. 구매자 입금이 확인되면 입금완료를 눌러주세요.', sysdate, #{sfd_mdgroup}, DEFAULT, DEFAULT,#{b_idx})
+	</insert>
+</mapper>

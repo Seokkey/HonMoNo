@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+<typeAliases>
+   <typeAlias alias = "CategoryDto" type="com.project.dto.CategoryDto"/>
+   <typeAlias alias = "MemberDto" type="com.project.dto.MemberDto"/>
+   <typeAlias alias = "BoardDto" type="com.project.dto.BoardDto"/>
+   <typeAlias alias = "CalendarDto" type="com.project.dto.CalendarDto"/>
+   <typeAlias alias = "CanvasDto" type="com.project.dto.CanvasDto"/>
+   <typeAlias alias = "HistoryDto" type="com.project.dto.HistoryDto"/>
+   <typeAlias alias = "MessageDto" type="com.project.dto.MessageDto"/>
+   <typeAlias alias = "PhotoDto" type="com.project.dto.PhotoDto"/>
+   <typeAlias alias = "ReplyDto" type="com.project.dto.ReplyDto"/>
+   <typeAlias alias = "SafeDealDto" type="com.project.dto.SafeDealDto"/>
+</typeAliases>
+
+</configuration>

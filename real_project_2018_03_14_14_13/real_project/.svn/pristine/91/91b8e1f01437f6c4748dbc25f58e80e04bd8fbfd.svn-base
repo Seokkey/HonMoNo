@@ -1,0 +1,25 @@
+package com.project.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.CategoryDto;
+import com.project.dto.MessageDto;
+
+public interface CategoryDao {
+
+	List<CategoryDto> getMaincategory();
+	int noticeIdx(int c_num);
+	List<CategoryDto> noticeList(int noticeidx);
+	List<CategoryDto> getSubcategory(int cnum);
+	int getFavorite(Map<Object, Object> map); //즐겨찾기 인지 확인
+	int faAdd(Map<Object, Object> map);	//즐겨찾기 추가
+	int faDel(Map<Object, Object> map);	//즐겨찾기 삭제
+	
+	
+	/*메시지 DAO*/
+	int sendMsg(MessageDto messageDto); //메시지 등록
+	String getMidgroupName(int c_num); //메시지 중분류 이름 가져오기
+	
+	
+}

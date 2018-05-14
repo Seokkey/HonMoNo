@@ -1,0 +1,519 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+import com.project.dto.PhotoDto;
+import com.project.dto.ReplyDto;
+import com.project.useClass.UploadFile;
+import com.project.useClass.estimatePaging;
+
+
+@Service
+public class EstiBoardService {
+
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private HttpSession session;
+	@Autowired
+	private HttpServletRequest request;
+	@Autowired
+	private HttpServletResponse response;
+	
+	private Map<String,List<ReplyDto>> rMap;
+	
+	private Map<String, Object> bMap;
+	
+	private ModelAndView mav;
+	
+	
+	@Autowired
+	UploadFile upload;
+	
+	public ModelAndView estiBoardList() {
+		System.out.println("견적문의 리스트 불러오기 메소드");
+		mav=new ModelAndView();	
+		List<BoardDto> blist=null;		
+		String c_idx = request.getParameter("c_idx");
+		String area = request.getParameter("area");
+		String furnitureCategory = request.getParameter("furnitureCategory");
+		String keyword = request.getParameter("keyword");
+		String searchtxt = request.getParameter("searchtxt");
+		String c_num = request.getParameter("c_num");
+				
+		System.out.println("파라미터로 받아온 idx:"+c_idx);
+		System.out.println("파라미터로 받아온 area:"+area);
+		System.out.println("파라미터로 받아온 furnitureCategory:"+furnitureCategory);
+		System.out.println("파라미터로 받아온 keyword:"+keyword);
+		System.out.println("파라미터로 받아온 searchtxt:"+searchtxt);
+		System.out.println("파라미터로 받아온 대분류번호:"+c_num);
+		
+		//pagenum 이 널이 아니면 앞에 널이면 뒤에 1
+		int pageNum=(request.getParameter("pageNum")!=null) 
+				? Integer.parseInt(request.getParameter("pageNum")) : 1;	
+				System.out.println("pageNum="+pageNum);
+		
+		//검색이 아닐 때 
+		if(area==null  && furnitureCategory==null && keyword==null   && searchtxt==null) {
+				System.out.println("검색 아님");
+				
+				HashMap<String, Integer> map = new HashMap<String, Integer>();
+				map.put("c_idx", Integer.parseInt(c_idx));
+				map.put("pageNum", pageNum);
+				blist=bDao.estiBoardList(map);
+				
+				String blistHtml=makeHtmtBlist(blist, c_num, c_idx);								
+				
+				mav.addObject("blist", blistHtml);
+				mav.addObject("paging",getPaging(pageNum,c_num,c_idx,area,furnitureCategory,keyword,searchtxt));
+				
+		}else {
+			System.out.println("검색 중");
+			System.out.println(pageNum);
+			System.out.println(c_idx);
+			System.out.println("지역 :"+ area);
+			System.out.println("제품 분류 :"+furnitureCategory);
+			System.out.println("키워드 :"+keyword);
+			System.out.println("텍스트 :"+searchtxt);
+			
+			HashMap<String, String> map = new HashMap<String, String>();
+		    map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+			map.put("c_idx", c_idx); // 게시판 이름*/		   
+		    map.put("area", area); // 지역
+		    map.put("furnitureCategory", furnitureCategory); // 가구분류
+		    map.put("keyword", keyword); //검색 키워드 = writer / sub / subcon
+		    map.put("searchtxt", searchtxt); //String 검색글씨
+		    System.out.println(map.size());
+		    System.out.println("페이지번호:"+map.get("pageNum"));
+		    System.out.println("검색지역 : "+map.get("area"));
+		    System.out.println("가구분류 : "+map.get("furnitureCategory"));
+		    System.out.println("검색키워드 : "+map.get("keyword"));
+		    System.out.println("검색내용 : "+map.get("searchtxt"));
+		    System.out.println("게시판 인덱스 : "+map.get("c_idx"));
+		    blist=bDao.estiBoardSerchList(map);
+			
+		    String blistHtml=makeHtmtBlist(blist, c_num, c_idx);						
+		    
+			mav.addObject("blist", blistHtml);
+			mav.addObject("paging",getPaging(pageNum,c_num,c_idx,area,furnitureCategory,keyword,searchtxt));
+			
+		}		
+		mav.addObject("boardName", bDao.estiBoardName(Integer.parseInt(c_idx))); //게시판 이름 가져오기
+		mav.setViewName("estimate/estimateList");
+		
+		return mav;
+	}
+	
+	// 페이징
+	private String getPaging(int pageNum,String c_num,String c_idx, String area,String furnitureCategory, String keyword, String searchtxt) { //현재 페이지 번호
+		System.out.println("페이징 메소드 실행");
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/		
+		map.put("c_idx", c_idx); // 게시판 idx 		   
+	    map.put("area", area); // 지역
+	    map.put("furnitureCategory", furnitureCategory); // 가구분류
+	    map.put("keyword", keyword); //검색 키워드 = writer / sub / subcon
+	    map.put("searchtxt", searchtxt); //String 검색글씨	
+		
+	    int maxNum=bDao.estiBoardCount(map); //게시글 총 갯수	
+		
+		int listCount=10; //한페이지의 글의 개수
+		int pageCount=5;  //한 그룹당 페이지 수
+		String boardUrl="listCall"; //페이징 처리해서 보낼 URL
+		estimatePaging paging = new estimatePaging(c_num,c_idx,maxNum,pageNum,listCount,pageCount,boardUrl,area,furnitureCategory,keyword,searchtxt);
+		return paging.makeHtmlPaging();
+	}
+	
+	//뷰 페이지에 리스트 출력 - 제목옆에 댓글 수 달기
+	private String makeHtmtBlist(List<BoardDto> blist, String c_num, String c_idx) {
+		System.out.println("게시글 html 출력 메소드");		
+		StringBuilder sb=new StringBuilder();		 
+		if(blist.size()>0) {			
+			for(int i=0;i<blist.size();i++){				
+				sb.append("<tr>");
+				sb.append("<td>"+blist.get(i).getB_idx()+"</td>");
+				sb.append("<td>"+blist.get(i).getEm_product()+"</td>");				
+				if(blist.get(i).getEm_choosedid().equals("N")) {
+					sb.append("<td>"	+"<a href='./estiDetail?b_idx="+blist.get(i).getB_idx()+"&c_num="+c_num+"&c_idx="+c_idx+"'>"+blist.get(i).getB_subject()+"</a>["+blist.get(i).getRcount()+"]<span>문의중!</span></td>");
+				}else{
+					sb.append("<td>"	+"<a href='./estiDetail?b_idx="+blist.get(i).getB_idx()+"&c_num="+c_num+"&c_idx="+c_idx+"'>"+blist.get(i).getB_subject()+"</a>["+blist.get(i).getRcount()+"]<span>채택완료!</span></td>");
+				}				
+				sb.append("<td align='center'>"+blist.get(i).getB_nick()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getEm_date()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getD_area()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_date()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_hit()+"</td></tr>");
+				
+			}
+		}else{
+			sb.append("<tr><td>등록된 게시물이 없습니다.</td></tr>");						
+		}
+		
+		return sb.toString();
+	}
+
+	//견적문의 글쓰기 폼 불러오기 메소드
+	public ModelAndView estiWriteForm(CategoryDto categorydto) {
+		mav=new ModelAndView();
+		System.out.println("글쓰기폼 게시판 이름:"+bDao.estiBoardName(categorydto.getC_idx()));
+		mav.addObject("boardName", bDao.estiBoardName(categorydto.getC_idx()));
+		mav.addObject("categorydto", categorydto);//게시판 이름 가져오기		
+		mav.setViewName("estimate/estimateWriteFrom");
+		return mav;
+	}
+	
+	//견적문의 게시글 상세보기 메소드+조회수 증가+댓글 리스트 불러오기
+	public ModelAndView estiDetail(CategoryDto categorydto) {
+		System.out.println("견적문의 상세보기 메소드");	
+		mav=new ModelAndView();
+		String b_idx = request.getParameter("b_idx");
+		System.out.println("인덱스번호:"+b_idx);		
+		
+		//저장된 쿠키 불러오기
+		Cookie cookies[] = request.getCookies();			
+		//쿠키가 널이 아니면
+		boolean a = false;
+		if(cookies != null){ 
+			for (int i = 0; i < cookies.length; i++) { 
+				if(cookies[i].getName().equals(b_idx)) {
+				System.out.println("해당쿠키 있음");
+				a = true;
+				}					
+			}
+		}else { //쿠키가 널이면 쿠키 생성&조회수 UP
+			String bhitCookie = b_idx;
+			Cookie cookie = new Cookie(bhitCookie, bhitCookie);
+			System.out.println(cookie.getName());
+			//유효시간 1000분
+			cookie.setMaxAge(60000);			
+			response.addCookie(cookie); 
+			
+			bDao.updateB_hit(b_idx);
+			System.out.println("조회수 업데이트");
+		}
+		
+		//해당 쿠키가 없으면 쿠키생성&조회수 UP
+		if(a == false){
+			String bhitCookie = b_idx;
+			Cookie cookie = new Cookie(bhitCookie, bhitCookie);
+			System.out.println(cookie.getName());
+			//유효시간 1000분
+			cookie.setMaxAge(60000);			
+			response.addCookie(cookie); 
+			
+			bDao.updateB_hit(b_idx);
+			System.out.println("조회수 업데이트");
+		}			
+		
+		//게시글 불러오기
+		BoardDto bDto  = bDao.estiDetail(b_idx);		
+		
+		List<ReplyDto> rlist=bDao.estiReplyList(b_idx);
+		System.out.println("댓글 가져왔나 확인:"+rlist.size());
+		if(rlist.size()>0){
+			mav.addObject("reply", rlist);
+		}
+		
+		List<PhotoDto> plist=bDao.estiPhotoList(b_idx);
+		System.out.println("사진 가져왔나 확인:" +plist.size());		
+		if(plist.size()>0){
+			mav.addObject("photo", plist);
+		}					
+		
+		System.out.println("글 제목 : "+bDto.getB_subject());
+		
+		mav.addObject("categorydto", categorydto);
+		mav.addObject("bDto", bDto);
+		mav.setViewName("estimate/estimateDeatil");
+		return mav;
+	}	
+
+
+	//견적문의 게시글 등록 메소드
+	public ModelAndView estiBoardWrite(BoardDto boardDto, MultipartHttpServletRequest multi, CategoryDto categorydto){
+		mav= new ModelAndView();
+		
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getB_idx());
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getD_area());
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getEm_date());
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getEm_brand());
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getEm_product());
+		System.out.println("글 등록 확인 메소드 파라메터들"+boardDto.getEm_choosedid());
+		
+		System.out.println("filechk : "+boardDto.getFilechk());
+		String b_nick=(String) request.getSession().getAttribute("loginNick");
+		boardDto.setB_nick(b_nick);
+		
+		int b=bDao.boardWrite(boardDto);
+		int u = -1 ;
+		int f= -1;
+		if(b== 1){
+			System.out.println("b_idx : "+boardDto.getB_idx());
+			u=bDao.estiBoardWrite(boardDto);
+		}
+		String view="";
+		String inDate   = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+		System.out.println(inDate);
+		
+		if(boardDto.getFilechk() ==1 && u==1){
+			List<MultipartFile> mf = multi.getFiles("imgfile");
+			int b_idx = boardDto.getB_idx();
+			System.out.println("ㅇ파일 b_idx : "+b_idx);
+			f=upload.fileUp(multi,inDate,b_idx,mf);
+			if(f == 1 && u==1){
+				view="redirect:listCall?c_idx="+categorydto.getC_idx()+"&c_num="+categorydto.getC_num()+"";
+				System.out.println(" 성공시 ");
+			}else{
+				view="redirect:/estimateWriteFrom";
+			}
+			mav.setViewName(view);
+		}else{
+			if( u==1){
+				view="redirect:/listCall?c_idx="+categorydto.getC_idx()+"&c_num="+categorydto.getC_num()+"";
+				System.out.println("성공시");
+			}else{
+				view="redirect:/estimateWriteFrom";
+			}
+			mav.setViewName(view);
+		}
+		
+				
+	
+		return mav;
+	}
+/*
+	//글쓰기
+	private int boardWrite(BoardDto boardDto, Map<Object, Object> fileMap, int filechk) {
+		String b_nick=(String) request.getSession().getAttribute("loginNick");
+		boardDto.setB_nick(b_nick);
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getB_idx());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getD_area());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_date());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_brand());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_product());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_choosedid());
+		
+		int b = bDao.boardWrite(boardDto);
+		
+		int u = -1 ;
+		if(b == 1){
+			System.out.println("b_idx : "+boardDto.getB_idx());
+			u= bDao.estiBoardWrite(boardDto);
+		}		
+		int f= -1;
+		if(filechk ==1){
+			fileMap.put("b_idx",String.valueOf(boardDto.getB_idx()));
+			f=bDao.fileInsert(fileMap);
+		}
+		if(u !=0 && f!=0){
+			return 1;
+		}
+		return 0;
+	}*/
+
+	//게시글 삭제 메소드
+	public ModelAndView estiBoardDelete(BoardDto boardDto, CategoryDto categorydto) {
+		System.out.println("게시글 삭제 메소드");
+		mav=new ModelAndView();
+		int success = bDao.estiBoardDelete(boardDto);
+		String msg = "";		
+		if(success > 0) {
+			msg = "게시글을 삭제하였습니다";
+		}else {
+			msg = "게시글 삭제에 실패하였습니다";
+		}
+		mav.addObject("msg", msg);
+		System.out.println(msg);
+		mav.setViewName("redirect:listCall?c_idx="+categorydto.getC_idx()+"&c_num="+categorydto.getC_num()+"");
+		System.out.println(mav.getViewName());
+		return mav;
+	}
+	
+	//견적문의 수정폼 메소드
+	public ModelAndView estiUpdateForm(CategoryDto categorydto, BoardDto boardDto) {
+		mav = new ModelAndView();
+		String b_idx = Integer.toString(boardDto.getB_idx());
+		System.out.println("견적문의 수정폼 불러오기 메소드 수정할 idx:"+b_idx);
+		
+		//게시글 불러오기
+		BoardDto bDto  = bDao.estiDetail(b_idx);		
+					
+		List<PhotoDto> plist=bDao.estiPhotoList(b_idx);
+		System.out.println("사진 가져왔나 확인:" +plist.size());		
+		if(plist.size()>0){
+			mav.addObject("photo", plist);
+		}					
+		
+		System.out.println("글 제목 : "+bDto.getB_subject());			
+		
+		
+		mav.addObject("boardDto", bDto);
+		mav.addObject("categorydto", categorydto);
+		mav.setViewName("estimate/estimateUpdateForm");
+		return mav;
+	}
+	
+	//견적문의 게시글 수정 메소드 ./estiDetail?b_idx="+blist.get(i).getB_idx()+"&c_num="+c_num+"&c_idx="+c_idx+"'>"+blist.get(i).getB_subject()+
+	public ModelAndView estiBoardUpdate(CategoryDto categorydto, BoardDto boardDto, MultipartHttpServletRequest multi) {
+		mav = new ModelAndView();
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getB_idx());
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getD_area());
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getEm_date());
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getEm_brand());
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getEm_product());
+		System.out.println("글 -수정- 확인 메소드 파라메터들"+boardDto.getEm_choosedid());
+		
+		System.out.println("filechk : "+boardDto.getFilechk());
+		String b_nick=(String) request.getSession().getAttribute("loginNick");
+		boardDto.setB_nick(b_nick);
+		
+		int b=bDao.boardUpdate(boardDto);
+		int u = -1 ;
+		int f= -1;
+		int d =-1;
+		if(b== 1){
+			System.out.println("b_idx : "+boardDto.getB_idx());
+			u=bDao.estiBoardUpdate(boardDto);
+		}
+		String view="";
+		String inDate   = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+		System.out.println(inDate);
+		
+		if(boardDto.getFilechk() ==1 && u==1){			
+			int b_idx = boardDto.getB_idx();
+			System.out.println("ㅇ파일 b_idx : "+b_idx);
+			d=bDao.fileDel(b_idx);
+			if(d != 0){
+				List<MultipartFile> mf = multi.getFiles("imgfile");
+				f=upload.fileUp(multi,inDate,b_idx,mf);
+				if(f == 1 && u==1){
+					view="redirect:listCall?c_idx="+categorydto.getC_idx()+"&c_num="+categorydto.getC_num()+"";
+					System.out.println(" 성공시 ");
+				}else{
+					view="redirect:/estimateUpdateFrom";
+				}
+				mav.setViewName(view);
+			}		
+			
+		}else{
+			if( u==1){
+				view="redirect:/listCall?c_idx="+categorydto.getC_idx()+"&c_num="+categorydto.getC_num()+"";
+				System.out.println("성공시");
+			}else{
+				view="redirect:/estimateWriteFrom";
+			}
+			mav.setViewName(view);
+		}
+		
+				
+	
+		return mav;
+	}
+/*	
+	//게시판 수정
+	private int boardUpdate(BoardDto boardDto, Map<Object, Object> fileMap, int filechk) {
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getB_idx());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getB_nick());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getD_area());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_date());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_brand());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_product());
+		System.out.println("글 등록 메소드 파라메터들"+boardDto.getEm_choosedid());
+		
+		int b = bDao.boardUpdate(boardDto);
+		
+		int u = -1 ;
+		if(b == 1){
+			System.out.println("b_idx : "+boardDto.getB_idx());
+			u= bDao.estiBoardUpdate(boardDto);
+		}		
+		int f= -1;
+		if(filechk ==1){
+			fileMap.put("b_idx",String.valueOf(boardDto.getB_idx()));
+			f=bDao.fileInsert(fileMap);
+		}
+		if(u !=0 && f!=0){
+			return 1;
+		}
+		return 0;
+	}*/
+	
+	
+	//댓글 등록 메소드
+	public Map<String, List<ReplyDto>> estiReplyWrite(ReplyDto reply) {
+		System.out.println("댓글 등록 메소드");		
+		Integer success = bDao.estiReplyWrite(reply);
+		System.out.println(success);
+		if(success != 0){
+			System.out.println("문자열로 바꾼 idx:"+Integer.toString(reply.getB_idx()));
+			List<ReplyDto> rlist=bDao.estiReplyList(Integer.toString(reply.getB_idx()));
+			System.out.println("댓글개수 가져왔나 확인:"+rlist.size());
+			rMap= new HashMap<String,List<ReplyDto>>();
+			rMap.put("reply", rlist);
+		}else{
+			//jsonStr=null;
+			rMap=null;
+		}
+		return rMap;
+	}
+
+	//댓글 삭제 메소드
+	public Map<String, List<ReplyDto>> estiReplyDel(ReplyDto reply) {
+		System.out.println("댓글 삭제 메소드");		
+		Integer success = bDao.estiReplyDel(reply);
+		System.out.println(success);
+		if(success != 0){
+			System.out.println("문자열로 바꾼 idx:"+Integer.toString(reply.getB_idx()));
+			List<ReplyDto> rlist=bDao.estiReplyList(Integer.toString(reply.getB_idx()));
+			System.out.println("댓글개수 가져왔나 확인:"+rlist.size());
+			rMap= new HashMap<String,List<ReplyDto>>();
+			rMap.put("reply", rlist);
+		}else{
+			//jsonStr=null;
+			rMap=null;
+		}
+		return rMap;
+	}
+
+	//채택하기 메소드
+	public Map<String, Object> estiChoose(BoardDto boardDto, CategoryDto categorydto) {
+		System.out.println("채택하기 메소드 "+boardDto.getB_idx()+boardDto.getEm_choosedid());
+		Integer success = bDao.estiChoose(boardDto);
+		System.out.println(success);
+		if(success != 0){			
+			bMap= new HashMap<String, Object>();
+			bMap.put("boardDto", boardDto);
+			bMap.put("categoryDto", categorydto);			
+		}else{
+			//jsonStr=null;
+			bMap=null;
+		}
+		
+		return bMap;
+	}
+
+	
+
+	
+	
+	
+	
+	
+	
+}//end

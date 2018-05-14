@@ -1,0 +1,66 @@
+package com.project.service;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.MemberDao;
+import com.project.dto.MemberDto;
+
+@Service
+public class MemberService {
+	
+	@Autowired
+	HttpSession session;
+	@Autowired
+	MemberDao mDao;
+	private ModelAndView mav;
+	
+	//로그인 서비스
+	public ModelAndView login(MemberDto mdto) {
+		System.out.println("로그인 서비스 진입");
+		
+		mav = new ModelAndView();
+		
+		MemberDto userLoginInfo = mDao.login(mdto);
+		
+		if(userLoginInfo.getM_nick() != null){
+			
+			System.out.println("로그인 성공");
+			
+			System.out.println("userLoginInfo.getM_nick() : "+userLoginInfo.getM_nick());
+			System.out.println("userLoginInfo.getM_rating() : "+userLoginInfo.getM_rating());
+			session.setAttribute("loginNick", userLoginInfo.getM_nick());
+			session.setAttribute("loginRating", userLoginInfo.getM_rating());
+			
+		}else{
+			System.out.println("로그인 실패");
+		}
+		
+		mav.setViewName("main");
+		
+		return mav;
+	}
+	
+	//로그아웃 서비스
+	public ModelAndView logout() {
+		System.out.println("로그아웃 서비스 진입");
+		
+		mav = new ModelAndView();
+		
+		System.out.println(session.getAttribute("loginNick"));
+		System.out.println(session.getAttribute("loginRating"));
+		
+		session.removeAttribute("loginNick");
+		session.removeAttribute("loginRating");
+		
+		mav.setViewName("main");
+		
+		return mav;
+	}
+	
+	
+	
+}

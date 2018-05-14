@@ -1,0 +1,94 @@
+package com.project.dao;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.project.dto.BoardDto;
+import com.project.dto.PhotoDto;
+import com.project.dto.ReplyDto;
+import com.project.dto.SafeDealDto;
+
+public interface BoardDao {	
+	/*공통 DAO*/
+
+	int fileInsert(Map<Object, Object> map); //공통 사진 저장
+
+	void updateB_hit(String bidx); //게시글 조회수 올리기
+	int boardWrite(BoardDto boarddto);//메인 게시판 테이블에 글넣기
+	int boardUpdate(BoardDto boardDto); //메인 게시판 테이블 업데이트
+	
+	int fileDel(int b_idx);//사진 삭제
+	
+	/*견적문의 DAO*/
+	List<BoardDto> estiBoardList(HashMap<String, Integer> map); //견적문의 리스트 불러오기
+	List<BoardDto> estiBoardSerchList(HashMap<String, String> map); //견적문의 검색 리스트 불러오기
+	BoardDto estiDetail(String bidx); //견적문의 상세보기
+	List<ReplyDto> estiReplyList(String bidx); //견적문의 댓글리스트 불러오기
+	List<PhotoDto> estiPhotoList(String bidx); //견적문의 사진 불러오기
+	int estiBoardCount(HashMap<String, String> map); //견적문의 게시글 카운트
+	String estiBoardName(int c_idx);// 견적문의 게시판별 이름 가져오기
+	Integer estiReplyWrite(ReplyDto reply); //견적문의 댓글 쓰기
+	Integer estiReplyDel(ReplyDto reply); //견적문의 댓글 삭제
+	int estiBoardDelete(BoardDto board); //견적문의 게시글 삭제		
+	int estiBoardWrite(BoardDto boarddto);// 견적문의 테이블에 내용넣기
+	int estiBoardUpdate(BoardDto boardDto); // 견적문의 테이블 수정하기
+	Integer estiChoose(BoardDto boardDto); //견적문의 채택하기
+
+	/*중고거래 DAO*/
+	int listcount(Map<Object, Object> map);//중고거래 글 개수
+	List<BoardDto> usedList(Map<Object, Object> map);//중고거래 리스트
+	String getProduc(int c_idx);//중고거래 게시판별 이름 가져오기
+	int useWrite(BoardDto boarddto);//게시판 메인테이블에 글넣기
+	int usedWrite(BoardDto boarddto);// 중고거래테이블에 내용넣기
+	BoardDto usedDetail(int b_idx);// 중고 거래 상세보기
+	List<ReplyDto> usedReply(int b_idx);//중고거래 리플리스트
+	List<PhotoDto> usedPhoto(int b_idx);//중고거래 사진 리스트
+	int useReplyWrite(ReplyDto replydto);//중고거래 댓글 쓰기
+	int usedUpdate(BoardDto boarddto);//중고거래 ㅇ업데이트
+	int useUpdate(BoardDto boarddto);
+	int usedDel(int b_idx);
+	int replyDel(int r_idx);
+
+	/*공지&이벤트 DAO*/
+	BoardDto noticeDetail(int b_idx);
+	List<PhotoDto> noticePhotoList(int b_idx);
+	List<BoardDto> noticeBoardList(HashMap<String, Integer> map);
+	List<BoardDto> noticeBoardSerchList(HashMap<String, String> map);
+	String noticeBoardName(String c_idx);
+	int noticeBoardCount(HashMap<String, String> map);
+
+	
+	
+	
+	List<BoardDto> evBoardList(HashMap<String, Integer> map);
+	//임시로
+	Object evDetail(int b_idx);
+	List<PhotoDto> evPhotoList(int b_idx);
+	String evBoardName(String c_idx);
+	int evBoardWrite1(BoardDto boarddto);
+	int evBoardWrite2(BoardDto boarddto);
+	
+	/*마이페이지 DAO*/
+	int myFavoriteBbsListChk(String m_nick);
+	List<Integer> myFavoriteBbsList(String m_nick);
+
+	
+	List<SafeDealDto> myTradeList1(String m_nick);
+	List<SafeDealDto> myTradeList2(String m_nick);
+	void myTradeListInfo1(int b_idx);
+	SafeDealDto detailPopUp(int sfd_idx);
+	List<SafeDealDto> detailPopUpInfo(int sfd_idx);
+	
+	
+	
+	/*매장소개 DAO*/
+	
+	
+	/*고객문의 DAO*/
+	
+
+	/**/
+
+	
+}

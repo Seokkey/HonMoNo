@@ -1,0 +1,213 @@
+package com.project.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+import com.project.dto.PhotoDto;
+import com.project.useClass.NoticePaging;
+
+@Service
+public class EvBoardService {
+
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	
+	private HttpServletRequest request;		
+	
+	private ModelAndView mav;
+	
+	
+
+	public ModelAndView noticeBoardList() {
+		System.out.println("서비스: 공지사항 리스트 불러오기");
+		mav=new ModelAndView();	
+		List<BoardDto> blist=null;
+		
+		String c_idx = request.getParameter("c_idx");
+		String searchtxt = request.getParameter("searchtxt");
+		System.out.println("파라미터로 받아온 idx:"+c_idx);
+		System.out.println("파라미터로 받아온 searchtxt:"+searchtxt);		
+		
+		//pagenum 이 널이 아니면 앞에 널이면 뒤에
+		int pageNum=(request.getParameter("pageNum")!=null) 
+				? Integer.parseInt(request.getParameter("pageNum")) : 1;	
+				System.out.println("pageNum="+pageNum);
+		
+				//검색이 아닐 때 
+		if(searchtxt==null) {
+				System.out.println("검색 아님");
+				
+				HashMap<String, Integer> map = new HashMap<String, Integer>();
+				map.put("c_idx", Integer.parseInt(c_idx));
+				map.put("pageNum", pageNum);
+				blist=bDao.noticeBoardList(map);
+				
+				String blistHtml=makeHtmtBlist(blist);								
+				
+				mav.addObject("blist", blistHtml);
+				mav.addObject("paging",getPaging(pageNum,c_idx,searchtxt));
+				
+		}else {//게시판 번호 넘겨야함
+			System.out.println("검색 중");
+			System.out.println(pageNum);
+			System.out.println(c_idx);
+			System.out.println("텍스트 :"+searchtxt);
+			
+			HashMap<String, String> map = new HashMap<String, String>();
+		    map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+			map.put("c_idx", c_idx); // 게시판 이름*/		   
+		    map.put("searchtxt", searchtxt); //String 검색글씨		    		    
+		    System.out.println(map.size());
+		    System.out.println("페이지번호:"+map.get("pageNum"));
+		    System.out.println("검색내용 : "+map.get("searchtxt"));
+		    System.out.println("게시판 인덱스 : "+map.get("c_idx"));
+		    blist=bDao.noticeBoardSerchList(map);
+			
+		    String blistHtml=makeHtmtBlist(blist);						
+		    
+			mav.addObject("blist", blistHtml);
+			mav.addObject("paging",getPaging(pageNum,c_idx,searchtxt));
+			
+		}		
+		mav.addObject("c_idx", bDao.noticeBoardName(c_idx));
+		
+/*		categorydto = getCategoryDto();
+		mav.addObject("categorydto", categorydto);*/
+		
+		mav.setViewName("event/noticeView");
+		
+		return mav;
+	}
+	
+	// 페이징
+	private String getPaging(int pageNum,String c_idx, String searchtxt) { //현재 페이지 번호
+		System.out.println("페이징 메소드 실행");
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("pageNum", Integer.toString(pageNum)); // 페이지 번호*/
+		map.put("c_idx", c_idx); // 게시판 idx 		   
+	    map.put("searchtxt", searchtxt); //String 검색글씨	
+		
+	    int maxNum=bDao.noticeBoardCount(map); //게시글 총 갯수	
+		
+		int listCount=10; //한페이지의 글의 개수
+		int pageCount=5;  //한 그룹당 페이지 수
+		String boardUrl="noticeBoardList"; //페이징 처리해서 보낼 URL
+		NoticePaging paging = new NoticePaging(c_idx,maxNum,pageNum,listCount,pageCount,boardUrl,searchtxt);
+		return paging.makeHtmlPaging();
+	}
+	
+	//뷰 페이지에 리스트 출력 - 제목옆에 댓글 수 달기
+	private String makeHtmtBlist(List<BoardDto> blist) {
+		System.out.println("게시글 html 출력 메소드");		
+		StringBuilder sb=new StringBuilder();			
+		if(blist.size()>0) {			
+			for(int i=0;i<blist.size();i++){
+				sb.append("<tr>");
+				sb.append("<td>"+blist.get(i).getRnum()+"</td>");
+				sb.append("<td>"
+						+ "<a href='./noticeDetail?b_idx="+blist.get(i).getB_idx()+"'>"+blist.get(i).getB_subject()+"["+blist.get(i).getRcount()+"]</a></td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_nick()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_date()+"</td>");
+				sb.append("<td align='center'>"+blist.get(i).getB_hit()+"</td></tr>");
+			}
+		}else{
+			sb.append("<tr><td colspan='5'>등록된 게시물이 없습니다.</td></tr>");						
+		}
+		
+		return sb.toString();
+	}
+
+	//공지사항 글쓰기 폼 불러오기 메소드
+	public ModelAndView noticeWriteForm() {
+		//게시판 이름 가져와야함
+		mav=new ModelAndView();
+		mav.setViewName("event/noticeWriteFrom");
+		return mav;
+	}
+	
+	//공지사항 게시글 등록 메소드
+	public ModelAndView noticeBoardWrite(BoardDto board, MultipartFile[] b_files) throws IOException{
+		//System.out.println("check="+board.getFileChk());
+				String root=request.getSession().getServletContext().getRealPath("/");
+				String uploadPath=root+"resources/upload/";
+				//2.폴더 생성을 꼭 할것...
+				File dir=new File(uploadPath);
+				if(!dir.isDirectory()){  //upload폴더 없다면
+					dir.mkdir();  //upload폴더 생성
+				}
+				PhotoDto photo=null;
+				List<PhotoDto> aList=new ArrayList<PhotoDto>();
+				for(MultipartFile file:b_files) {
+					String oriFileName = file.getOriginalFilename();
+					// 저장할 파일이름
+					String sysFileName = System.currentTimeMillis() + "-" + oriFileName;
+					File dest = new File(uploadPath, sysFileName);
+					FileCopyUtils.copy(file.getBytes(), dest); //실질적 업로드
+					photo=new PhotoDto();
+					photo.setP_oriname(oriFileName);
+					photo.setP_newname(sysFileName);
+					bDao.fileInsert(photo);
+					//aList.add(attach);
+					//attach.getBf_oriname().add(oriFileName);
+					//attach.getBf_sysname().add(savedFileName);
+				}
+				/*List<String> oriList=attach.getBf_oriname();
+				for(int i=0;i<oriList.size();i++){
+					System.out.println("attach-oriName="+attach.getBf_oriname().get(i));
+					System.out.println("attach-sysName="+attach.getBf_sysname().get(i));
+				}*/
+				
+				return null;
+			}
+	
+	//공지사항 게시글 상세보기 메소드
+	public ModelAndView noticeDetail() {
+		System.out.println("공지사항 상세보기 메소드");		
+		mav=new ModelAndView();		
+		
+		int b_idx = Integer.parseInt(request.getParameter("b_idx"));
+		System.out.println("인덱스번호:"+b_idx);		
+		mav.addObject("board", bDao.noticeDetail(b_idx));
+		
+		List<PhotoDto> photoList=bDao.noticePhotoList(b_idx);
+		
+		if(photoList.size()!=0){
+			mav.addObject("photo", photoList);
+		}
+		
+/*		categorydto = getCategoryDto();
+		mav.addObject("categorydto", categorydto);*/
+		
+		mav.setViewName("event/noticeDetail");
+		return mav;
+	}
+	
+	//사이드바에 쓰일 카테고리 빈에  c_num, c_name 담는 메서드
+	public CategoryDto getCategoryDto(){
+		CategoryDto categorydto =new CategoryDto();
+		System.out.println("getCategoryDto c_num : "+categorydto.getC_num());
+		System.out.println("getCategoryDto c_name : "+categorydto.getC_name());
+		
+		categorydto.setC_num(Integer.parseInt(request.getParameter("c_num")));
+		categorydto.setC_name(request.getParameter("c_name"));
+		
+		return categorydto;
+	}
+
+	
+}

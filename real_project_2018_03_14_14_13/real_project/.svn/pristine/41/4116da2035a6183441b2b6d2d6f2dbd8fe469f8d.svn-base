@@ -1,0 +1,216 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<html>
+
+<style>
+body { /* margin: 0; */ }
+		.zeta-menu-bar {
+		  border: 1px solid;
+		  background: lightgreen;
+		  display: inline-block;
+		  
+		  margin: 10px 10px;
+		  width: 160px;
+		}
+		.zeta-menu { margin: 0; padding: 0; }
+		.zeta-menu li {
+		  float: none;
+		  list-style:none;
+		  position: relative;
+		}
+		/* .zeta-menu li:` { background: pink; } */
+		.zeta-menu li.expand { background: white; }
+		.zeta-menu li.expand>a { color: hotpink; }
+		.zeta-menu a {
+		  color: white;
+		  display: block;
+		  padding: 10px 20px;
+		  text-decoration: none;
+		}
+		.zeta-menu ul {
+		  background: #eee;
+		  border: 1px solid silver;
+		  display: none;
+		  padding:10px 10px;
+		  position: absolute;
+		  left:100%;
+		  top: 0%;
+		  
+		  width: 180px;
+		  
+		}
+		.zeta-menu ul li { float: left; }
+		.zeta-menu ul li.expand { background: #ddd; }
+		.zeta-menu ul li.expand a{ color: black; }
+		.zeta-menu ul a { color: black; }
+		.zeta-menu ul ul { left: 100%; top: 0; }
+
+</style>
+	
+	 <body>
+	 	
+    	<div class='zeta-menu-bar'>
+			  <ul class="zeta-menu">
+			 
+			    <li><a href="#">대분류 값</a></li>
+			    <li><a href="#0">0</a></li>
+			    <li><a href="#1">1</a>
+				    <ul>
+				        <li><a href="#10">#1A</a></li>
+				        <li><a href="#11">#1B</a></li>
+				        <li><a href="#12">#1C</a></li>
+				        <li><a href="#13">#1D</a></li>
+				        <li><a href="#14">#1E</a></li>
+				        <li><a href="#15">#1F</a></li>
+				        <li><a href="#16">#1G</a></li>
+				     </ul>
+			    </li>
+			    <li><a href="#2">2</a>
+			      <ul>
+			        <li><a href="#20">#2A</a></li>
+			        <li><a href="#21">#2B</a></li>
+			        <li><a href="#22">#2C</a></li>
+			        <li><a href="#23">#2D</a></li>
+			        <li><a href="#24">#2E</a></li>
+			        <li><a href="#25">#2F</a></li>
+			        <li><a href="#26">#2G</a></li>
+			      </ul>
+			    </li> 
+			    <li>
+			    	<a href="#3">3</a>
+			    	<ul>
+				        <li><a href="#30">#3A</a></li>
+				        <li><a href="#31">#3B</a></li>
+				        <li><a href="#32">#3C</a></li>
+				        <li><a href="#33">#3B</a></li>
+				        <li><a href="#34">#3C</a></li>
+			      </ul>
+			    </li> 
+			  </ul>
+			</div>
+    	</body>   
+    	<script>
+			var c_num="${categorydto.c_num}";
+			var c_name="${categorydto.c_name}";
+	    	$("a[href='#']").html(c_name);
+	    	
+	    	//중분류 카테고리 클릭시 소분류 카테고리 슬라이드바
+	    	$(function(){
+				$(document).mouseup(function(e) {
+					if ($(e.target).parents('.zeta-menu').length == 0) {					
+						$('.zeta-menu li').removeClass('expand');
+						$('.zeta-menu ul').hide();
+					}
+				});
+				
+				$(".zeta-menu>li:has(ul)>a").each( function() {
+					$(this).html( $(this).html()+' &or;' );
+				});
+				
+				 $(".zeta-menu ul li:has(ul)")
+					.find("a:first")
+					.append("<p style='float:right;margin:-3px'>&#9656;</p>"); 
+			
+				 $(".zeta-menu li>a").click(function(){
+					var li = $(this).parent();
+					var ul = li.parent();
+					ul.find('li').removeClass('expand');
+					ul.find('ul').not(li.find('ul')).hide();
+					li.children('ul').toggle();
+					if( li.children('ul').is(':visible') || li.has('ul')) {
+						li.addClass('expand');
+					} 
+					});	
+				});
+	
+			 //중분류, 소분류 카테고리 띄우기
+	    	$(document).ready(function(){
+	    		
+	    		$.ajax({
+	    			url:'subcategorylist',
+	    			data:{c_name:c_name,c_num:c_num},
+	    			dataType:'json',
+	    			success:function(data){
+	    				
+	    				console.log(data);				
+	    				
+	    				var highCategory = [];
+	    				var k =0;
+	    				
+	    				for(var i =0;i<data.subList.length;i++){
+	    					 if(data.subList[i].c_group == 'middle'){
+	    						 
+	    						 highCategory.push(data.subList[i].c_name);
+	    						 $("a[href='#"+k+"']").html(highCategory[k]);
+	    						 k++;
+	    					 }
+	    				}
+						
+	    				console.log(highCategory);
+	    				
+	    				var mdCategory1 = [];
+	    				var mdCategory2 = [];
+	    				var mdCategory3 = [];
+	    				
+	    				var mdIdx1 = [];
+	    				var mdIdx2 = [];
+	    				var mdIdx3 = [];
+	    				
+	    				var mdCont1 = 0;
+	    				var mdCont2 = 0;
+	    				var mdCont3 = 0;
+	    				
+	     				for(var j = 0;j<data.subList.length;j++){
+	    					
+							switch (data.subList[j].c_mdgroup) {
+				 						
+								case highCategory[1]:
+									mdCategory1.push(data.subList[j].c_name);
+									mdIdx1.push(data.subList[j].c_idx);
+									$("a[href='#1"+mdCont1+"']").html(mdCategory1[mdCont1]+"<input type='hidden' value='^"+mdIdx1[mdCont1]+"^'/>");
+									mdCont1++;
+									break;
+								
+								case highCategory[2]:
+									mdCategory2.push(data.subList[j].c_name);
+									mdIdx2.push(data.subList[j].c_idx);
+									$("a[href='#2"+mdCont2+"']").html(mdCategory2[mdCont2]+"<input type='hidden' value='^"+mdIdx2[mdCont2]+"^'/>");
+									mdCont2++;
+									break;
+								
+								case highCategory[3]:
+									mdCategory3.push(data.subList[j].c_name);
+									mdIdx3.push(data.subList[j].c_idx);
+									$("a[href='#3"+mdCont3+"']").html(mdCategory3[mdCont3]+"<input type='hidden' value='^"+mdIdx3[mdCont3]+"^'/>");
+									mdCont3++;
+									break;
+								
+								default:
+									break;
+								}
+	    						
+	    				}
+	    				console.log(mdCategory1);
+	    				console.log(mdCategory2);
+	    				console.log(mdCategory3); 
+		    			 
+	    			},
+	    			error:function(error){
+	    				console.log(error);
+	    			}   		
+	    		})
+	    	});
+			
+			 $("a").click(function(e){
+	    		
+				var cIdxHtml = e.target.innerHTML;
+				
+	    		var cIdxSplit = cIdxHtml.split("^");
+	    		console.log(cIdxSplit[1]);
+	    		
+	    	});
+	    
+    </script>
+    
+    
+</html>

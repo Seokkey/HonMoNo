@@ -1,0 +1,164 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		section{
+			width: 50%;
+		}
+		.arti1{
+			width: 25%;
+		
+		}
+		
+		#hak{
+			position: absolute;
+               top:31%;
+               right: 40%;
+		}
+		
+        </style>
+    </head>
+    <body>
+    	<jsp:include page="../memberLoginBox.jsp"/>
+    	<jsp:include page="../mdgroupSideBar.jsp"/> 
+    	
+    <div id="hak">	
+		<p>시몬스 로고</p>
+		시몬스 설명 어쩌구~~~ <br /><br />
+		
+		<section>
+			<article class="arti1">
+				<c:forEach items="${shopList }" var="shopList">
+				<article class="arti2">
+					<header  >
+						<a href="./shopDetail?b_idx=${shopList.b_idx}&c_idx=${c_idx}&c_num=${c_num}">${shopList.sh_brand }</a>
+					</header>
+					<figure;>					
+						<c:forEach items="${photoList }" var="photoList">
+							<c:if test="${shopList.b_idx == photoList.b_idx }">
+								<img width="5%" height="5%" class="image" src="${photoList.p_path}${photoList.p_newname}"/>
+							</c:if>		
+						</c:forEach>	
+									
+					</figure>
+					<footer  style="width: 30%">
+						<div>${shopList.sh_address}</div>
+					</footer>
+				</article>	
+				</c:forEach>	
+			</article>		
+		</section>
+		
+		<br/>		
+      <div id="pageForm" style=" margin-left: 10%;">
+				    
+				   <c:if test="${startpage >1}">
+				    	<a href='./listCall?c_idx=${c_idx}&keyword=${searchlist.keyword}&search=${searchlist.search}&page=${spage =1}&c_num=${param.c_num}'>[처음]</a>
+					</c:if>		   
+				        <c:if test="${spage > 1}">
+				            <a href='./listCall?c_idx=${c_idx}&keyword=${searchlist.keyword}&search=${searchlist.search}&page=${spage -1}&c_num=${param.c_num}'>[ 이전 ]</a>
+				        </c:if>
+				        
+				        <c:forEach var="pageNum" begin="${startPage}" end="${endPage}">
+				            <c:if test="${pageNum == spage}">
+				                ${pageNum}&nbsp;
+				            </c:if>
+				            <c:if test="${pageNum != spage}">
+				                <a href='./listCall?c_idx=${c_idx}&keyword=${searchlist.keyword}&search=${searchlist.search}&page=${pageNum}&c_num=${param.c_num}'>${pageNum}&nbsp;</a>
+				            </c:if>
+				        </c:forEach>
+				        <c:if test="${spage<maxPage }">
+				        	<a href='./listCall?c_idx=${c_idx}&keyword=${searchlist.keyword}&search=${searchlist.search}&page=${spage+1}&c_num=${param.c_num}'>[다음]</a>
+				        </c:if>
+				        <c:if test="${endPage < maxPage }">
+				            <a href='./listCall?c_idx=${c_idx}&keyword=${searchlist.keyword}&search=${searchlist.search}&page=${endpage}&c_num=${param.c_num}'>[끝]</a>
+				        </c:if> 				        
+				    </div>
+		<br/>
+		<br/>
+		<span>
+			<!-- <input type="button" id = "meetSearchBtn" value = "검색"> -->
+			<select name="search" id = "search">
+	  			<option value="address">주소</option>
+			</select>
+			<input type="text" id = "keyword"/>
+			<a href = "javascript:searchBtn()" id = "searchBtn"> 검색</a>
+			 <a href = "javascript:shopWriteForm()"> 글쓰기</a>	
+		</span>
+		</div>
+	</body>
+	<script>
+	console.log("${photodto}")
+	var b_nick="${sessionScope.loginNick}";
+	
+	function searchBtn(){			
+		
+		var search = $("#search option:selected").val();
+		var keyword = $("#keyword").val();
+		if(search == "" && keyword != ""){
+			alert("검색어를 입력해주세요");		
+		}else{
+			location.href="./listCall?c_idx="+${c_idx}+"&c_num="+c_num+"&area="+area+"&brand="+brand+"&search="+search+"&keyword="+keyword+"";
+		}
+	}
+	/*글쓰기  */
+	function shopWriteForm(){
+		console.log(c_num);
+		console.log("${c_idx}");
+		if(b_nick == ""){
+			alert("로그인이 필요한 서비스 입니다.");
+			$("#toggle-sidebar").trigger("click");
+		}else{
+				 location.href="./shopWriteForm?c_idx="+${c_idx}+"&c_num="+c_num+""; 					
+		}				
+	}
+	
+	/* 즐겨찾기 추가 삭제 => catecontroller */
+	function favoriteBbs(d){
+		console.log(d);
+		console.log(d.getAttribute('id'));
+		if(b_nick == ""){
+			alert("로그인이 필요한 서비스 입니다.");
+			$("#toggle-sidebar").trigger("click");
+		}else{
+			var faId = d.getAttribute('id');
+			console.log(faId==0);
+			if(faId == 0){
+				$.ajax({
+					url:'faAdd',
+					type:'get',
+					data:{c_idx:"${c_idx}"},
+					dataType:'json',
+					success:function(data){						
+						console.log(data);
+						alert(data.msg);
+						location.reload();
+					},
+					error:function(e){
+						console.log(error);
+					}			
+				});	
+			}else{
+				$.ajax({
+					url:'faDel',
+					type:'get',
+					data:{c_idx:"${c_idx}"},
+					dataType:'json',
+					success:function(data){						
+						console.log(data);
+						alert(data.msg);
+						location.reload();
+					},
+					error:function(e){
+						console.log(error);
+					}			
+				});
+			}	
+		}						
+	}
+	</script>
+</html>

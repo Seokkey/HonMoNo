@@ -1,0 +1,45 @@
+<<<<<<< .mine
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>
+		</style>
+	</head>
+	<body>
+		<jsp:include page="../memberLoginBox.jsp"/>
+		
+	
+		<h1>매장정보 이용안내</h1>
+		<jsp:include page="../mdgroupSideBar.jsp"/>
+	</body>
+</html>||||||| .r0
+=======
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>
+		</style>
+	</head>
+	<body>
+		<jsp:include page="../memberLoginBox.jsp"/>
+		<h1>매장정보 이용안내</h1>
+		<jsp:include page="../mdgroupSideBar.jsp"/>
+		
+	</body>
+	<script>
+		var c_num="${categorydto.c_num}";
+		var c_name="${categorydto.c_name}";
+		console.log(c_num);
+		console.log(c_name);
+	</script>
+</html>>>>>>>> .r364

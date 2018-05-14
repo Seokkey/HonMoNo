@@ -1,0 +1,140 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style>
+		</style>
+		<title>거래 요청 상세보기</title>
+	</head>
+	<body>
+		<h1>거래 요청 내역서</h1>
+			<table>			
+                <tr>
+                    <th colspan="6">배송 정보</th>
+                </tr>
+				<tr>
+					<th>이름: </th>
+					<td colspan="5">${sfddto.sfd_name}</td>
+				</tr>
+				<tr>
+					<th>배송 희망일: </th>
+					<td colspan="5">${sfddto.sfd_dvdate }</td>
+				</tr>
+				<tr>
+					<td rowspan="4">배송 주소: </td>
+				<tr>
+					<td colspan="5">${sfddto.sfd_address1 }</td>
+				</tr>
+				<tr>
+					<td colspan="5">${sfddto.sfd_address2 }</td>
+				</tr>
+				<tr>
+					<td colspan="5">${sfddto.sfd_address3 }</td>
+				</tr>
+				<tr>
+					<th>연락처 1: </th>
+					<td colspan="5">${sfddto.sfd_phone1 }</td>
+				</tr>
+				<tr>
+					<th>연락처 2: </th>
+					<td colspan="5">${sfddto.sfd_phone2 }</td>
+				</tr>
+				<tr>
+					<th colspan="6">제품 구매 내역</th>
+				</tr>
+				<tr>
+					<th>모델명</th><th>규격</th><th>색상</th><th>수량</th><th>금액</th><th>비고</th>
+				</tr>				
+				<c:forEach items="${sfdInfolist }" var="sfdInfo">
+					<tr>
+						<td>${sfdInfo.si_model }</td>
+						<td>${sfdInfo.si_size }</td>
+						<td>${sfdInfo.si_color }</td>
+						<td>${sfdInfo.si_amount }</td>
+						<td>${sfdInfo.si_price }</td>
+						<td>${sfdInfo.si_note}</td>					
+					</tr>
+				</c:forEach>
+				<tr>
+					<th>총 결제 금액 : </th>
+					<td colspan="5">${sfddto.sfd_sumprice}</td>
+				</tr>
+				<tr>
+					<th colspan="6">결제방법 : 안전거래</th>					
+				</tr>
+				<tr>
+					<th>기타 특약 사항 : </th>
+					<td colspan="5">${sfddto.sfd_etccontract }</td>
+				</tr>
+				<tr>
+					<th colspan="6">거래 확인</th>
+				</tr>
+				<tr>
+					<th>구매자 : </th>
+					<td colspan="5">${sfddto.sfd_buyid}</td>				
+				</tr>
+				<tr>
+					<th>판매자 : </th>
+					<td colspan="5">${sfddto.sfd_sellid }</td>
+				</tr>
+				<tr>
+					<th>거래일 : </th>
+					<td colspan="5">${sfddto.sfd_dealdate}</td>				
+				</tr>
+				<tr>
+					<td  colspan="6">위 내용은 구매자와 판매자간의 협의가 충분히 되었으며 분쟁 발생시 소비자 보호법에 의거 처리한다.<br/></br></td>
+				</tr>				
+				<tr>
+					<th  colspan="6">안전거래 입금처</th>					
+				</tr>
+				<tr>
+					<td  colspan="6">은행명 : 국민은행<br/>예금주 : 혼수상태<br/>계좌번호 : 000-0000-0000<br/> 입금액 : ${sfddto.sfd_sumprice}</td>
+				</tr>			
+			</table>
+			<button>정정요청</button>
+			<button>수락</button>
+			<!--
+			버튼정리 -  항상 alert 달아주기 거래요청정정요청입금대기입금완료/배송준비중환불요청거래취소
+			
+			"거래요청" 상태
+			판매자 : 정정요청(클릭->진행상태 정정요청으로 변경) , 수락(클릭->진행상태 입금대기로 변경)
+			소비자 : 수정(클릭->소비자 수정완료시 거래요청상태로 돌아감), 거래취소(클릭->진행상태 거래취소로 변경)
+			관리자 : 거래취소(클릭->진행상태 거래취소로 변경)
+			
+			"정정요청" 상태
+			판매자 : 버튼X
+			소비자 : 수정(클릭->소비자 수정완료 시 거래요청상태로 돌아감), 거래취소(클릭->진행상태 거래취소로 변경) 
+			관리자 : 거래취소(클릭->진행상태 거래취소로 변경)
+			
+			"입금대기" 상태
+			판매자 : 버튼X
+			소비자 : 수정(클릭->진행상태 거래요청으로 변경), 거래 취소 (클릭->진행상태 거래취소로 변경)
+			관리자 : 입금완료(클릭->진행상태 입금완료/배송준비중 으로 변경), 거래취소(클릭->진행상태 거래취소로 변경)
+			
+			"입금완료/배송준비중" 상태
+			판매자 : 버튼X
+			소비자 : 구매확정(클릭->진행상태 구매확정으로 변경), 환불요청(클릭->진행상태 환불요청으로 변경)
+			관리자 : 구매확정(클릭->진행상태 구매확정으로 변경), 환불요청(클릭->진행상태 환불요청으로 변경)
+			
+			"환불요청" 상태
+			판매자 : 환불확인(클릭->진행상태 거래취소로 변경)
+			소비자 : 환불취소(클릭->진행상태 입금완료/배송준비중으로 변경)
+			관리자 : 환불확인(클릭->진행상태 거래취소로 변경), 환불취소(클릭->진행상태 입금완료/배송준비중으 변경)
+			
+			"거래취소" 상태
+			판매자 : "취소된 거래입니다."  
+			소비자 : "취소된 거래입니다."  
+			관리자 : "취소된 거래입니다."
+			
+			
+			
+			ajax를 이용한 폴링			
+			
+			  -->
+	</body>
+	<script>
+	</script>
+</html>

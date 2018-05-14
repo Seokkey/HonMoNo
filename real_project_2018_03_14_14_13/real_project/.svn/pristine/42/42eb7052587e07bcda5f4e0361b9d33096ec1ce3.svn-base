@@ -1,0 +1,11 @@
+package com.project.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.project.dao.BoardDao;
+
+public class BoardService {
+
+	@Autowired
+	BoardDao bDao;
+}

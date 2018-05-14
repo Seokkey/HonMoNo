@@ -1,0 +1,40 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.project.dao.BoardDao;
+import com.project.dao.CategoryDao;
+import com.project.dto.BoardDto;
+
+@Service
+public class EvBoardService {
+	
+	@Autowired
+	BoardDao bDao;
+	@Autowired
+	CategoryDao cDao;
+	
+	//공지사항 리스트 호출
+	@ResponseBody
+	public Map<String, List<BoardDto>> noticeList(int c_idx) {
+		
+		System.out.println("테스트 cnum : "+c_idx);
+		
+		System.out.println("cidx : "+ c_idx);
+		List<BoardDto> noticeList= bDao.noticeList(c_idx);
+		
+		Map<String, List<BoardDto>> noticeMap = new HashMap<String, List<BoardDto>>();
+		noticeMap.put("noticeList",noticeList);
+		System.out.println("noticeList : "+noticeMap);
+		
+		return noticeMap;
+	}
+	
+	
+}

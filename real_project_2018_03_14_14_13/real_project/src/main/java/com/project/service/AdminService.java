@@ -1,0 +1,83 @@
+package com.project.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.project.dao.MemberDao;
+import com.project.dto.MemberDto;
+
+@Service
+public class AdminService {
+	
+	@Autowired
+	MemberDao mDao;
+	
+	//rating 3인 가입대기업체 리스트 호출
+	public Map<String, List<MemberDto>> mList1(MemberDto mDto) {
+
+		List<MemberDto> mList1 = mDao.mList1(mDto);
+		Map<String, List<MemberDto>> mList1Map =new HashMap<String, List<MemberDto>>();
+		mList1Map.put("mList1", mList1);
+		
+		return mList1Map;
+	}
+	
+	//가입대기업체 rating 3에서 2로 업데이트
+	public int memberRatingUp(String m_nick) {
+		
+		int success = mDao.memberRatingUp(m_nick);
+		
+		return success;
+	}
+	
+	//rating 1인 소비자 리스트 호출
+	public Map<String, List<MemberDto>> mList2(MemberDto mDto) {
+		
+		List<MemberDto> mList2 = mDao.mList2(mDto);
+		Map<String, List<MemberDto>> mList2Map =new HashMap<String, List<MemberDto>>();
+		mList2Map.put("mList2", mList2);
+		
+		return mList2Map;
+	}
+	
+	//rating 1인 소비자 정보 삭제
+	public int mDel(String m_nick) {
+		
+		int success = mDao.mDel(m_nick);
+		
+		return success;
+	}
+
+	public Map<String, List<MemberDto>> mList3(MemberDto mDto) {
+		
+		List<MemberDto> mList3 = mDao.mList3(mDto);
+		Map<String, List<MemberDto>> mList3Map =new HashMap<String, List<MemberDto>>();
+		mList3Map.put("mList3", mList3);
+		
+		return mList3Map;
+	}
+
+	public int msDel(String m_nick) {
+		
+		int success = 3;
+		
+		int result1 = 0;
+		int result2 = 0;
+		
+		result1 = mDao.mDel(m_nick);
+		result2 = mDao.msDel(m_nick);
+		
+		if(result1+result2==3){
+			success=0;
+		}
+		
+		return success;
+	}
+	
+	
+	
+}

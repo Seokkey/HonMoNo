@@ -1,0 +1,11 @@
+package com.project.dao;
+
+import java.util.List;
+
+import com.project.dto.CategoryDto;
+
+public interface CategoryDao {
+
+	List<CategoryDto> getMaincategory();
+
+}

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+ 	<select id="noticeBoardList" parameterType="HashMap" resultType="BoardDto">
+		<![CDATA[
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, b_subject, b_nick, b_date, b_hit,(SELECT COUNT(*) FROM board b_idx) AS rcount 	
+						FROM(SELECT * FROM board WHERE c_idx=#{c_idx} AND b_display='Y' ORDER BY b_idx DESC)) 
+						WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+			 ]]>
+	</select>
+	<select id="noticeBoardCount" parameterType="HashMap" resultType="int">
+		<choose>			
+			<when test="area == null and furnitureCategory == null and keyword == null and searchtxt == null">
+				SELECT COUNT(*) FROM board WHERE c_idx=#{c_idx} AND b_display='Y'
+			</when>
+			<when test="keyword.equals('writer')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_nick LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<when test="keyword.equals('sub')">
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{searchtxt}||'%'
+			</when>
+			<otherwise>
+				SELECT COUNT(*) FROM(SELECT*FROM(SELECT*FROM board WHERE c_idx=#{c_idx} AND b_display='Y') WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE  '%'||#{area}||'%') WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%'
+			</otherwise>
+		</choose>		
+	</select>
+	
+	<select id="noticeBoardSerchList" parameterType="HashMap" resultType="BoardDto">
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, em_product, b_subject, b_content, b_nick, em_date, d_area, b_date, b_hit 
+            FROM(SELECT * FROM(SELECT * FROM(SELECT * FROM board WHERE c_idx=#{c_idx} AND b_display='Y' ORDER BY b_idx DESC)) WHERE em_product LIKE '%'||#{furnitureCategory}||'%' AND d_area LIKE '%'||#{area}||'%') 
+            			 	<choose>
+            			    <when test="keyword.equals('writer')">
+						      	WHERE b_nick LIKE '%'||#{searchtxt}||'%')
+						    </when>
+						    <when test="keyword.equals('sub')">
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%')
+						    </when>
+						    <otherwise>
+						     	WHERE b_subject LIKE '%'||#{searchtxt}||'%' AND b_content LIKE '%'||#{searchtxt}||'%')
+						    </otherwise>						    
+						    </choose>
+						    <![CDATA[
+						    WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+						    ]]>
+	</select>
+	
+	<select id="noticeDetail" parameterType="int" resultType="BoardDto">
+		SELECT * FROM board WHERE b_idx=#{b_idx}
+	</select>
+	<select id="noticePhotoList" parameterType="int" resultType="BoardDto">
+		SELECT * FROM photo WHERE b_idx=#{b_idx}
+	</select>	
+	<select id="noticeBoardName" parameterType="String" resultType="String">
+		SELECT c_name FROM category WHERE c_idx=#{c_idx}
+	</select>
+	
+	<select id="evBoardList" parameterType="HashMap" resultType="BoardDto">
+		<![CDATA[
+		SELECT * FROM (SELECT ROWNUM AS rnum, b_idx, b_subject, b_nick, b_date, b_hit, ev_start, ev_end
+						FROM(SELECT * FROM vw_event WHERE c_idx=#{c_idx} AND b_display='y' ORDER BY b_idx DESC)) 
+						WHERE rnum>=#{pageNum}*10-9 AND rnum<=#{pageNum}*10
+			 ]]>
+	</select>
+	
+	<select id="evBoardName" parameterType="String" resultType="String">
+		SELECT c_name FROM category WHERE c_idx=#{c_idx}
+	</select>
+	
+	<insert id="evBoardWrite1" parameterType="BoardDto" useGeneratedKeys="true" keyProperty="b_idx">
+		INSERT INTO board(b_idx,c_idx,b_nick,b_subject,b_content,b_hit,b_date,b_display) VALUES(SEQ_BIDX.NEXTVAL,#{c_idx},#{b_nick},#{b_subject},#{b_content}, 0, sysdate, 'y')
+			<selectKey keyProperty="b_idx" order="AFTER" resultType="int">
+				SELECT SEQ_BIDX.CURRVAL FROM DUAL
+			</selectKey>
+	</insert>
+	
+	<insert id="evBoardWrite2" parameterType="BoardDto">
+		INSERT INTO event(b_idx,ev_start, ev_end) 
+		VALUES(#{b_idx},#{ev_start},#{ev_end})	
+	</insert>
+	
+	<!-- <update id="evUpdate" parameterType="BoardDto">
+		UPDATE board
+		SET b_date=sysdate WHERE b_idx=#{b_idx}
+	</update>
+	
+	<update id="evsUpdate" parameterType="BoardDto">
+		UPDATE board
+		SET b_date=sysdate WHERE b_idx=#{b_idx}
+	</update> -->
+	
+	<update id="evDel" parameterType="int">
+		UPDATE board set b_display='N' WHERE b_idx=#{b_idx}
+	</update>
+</mapper>

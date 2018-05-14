@@ -1,0 +1,355 @@
+package com.project.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dao.CategoryDao;
+import com.project.dao.MemberDao;
+import com.project.dto.CategoryDto;
+import com.project.dto.SafeDealDto;
+
+@Service
+public class MypageService {
+	
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private MemberDao mDao;	
+	@Autowired
+	private CategoryDao cDao;	
+	@Autowired
+	HttpSession session;
+	@Autowired
+	HttpServletRequest request;
+	private ModelAndView mav;
+	
+	public List<CategoryDto> myFavoriteBbsList() {
+		
+		/*		
+		1. 닉네임으로 관심게시판 테이블에 접근
+		2. 아이디로 c_idx를 전부가져옴
+		3. c_idx로 c_name과 c_num을 가져옴
+		4. 사이드바 모양만 잡아놓고 거기다가 c_name 으로 리스트 만들어서 붙임
+		 -> c_name 은 c_num 을 기준으로 중고와 견적을 나눈다.
+		5. 관심게시판 기본페이지는 페이지안내로 한다.		 
+		*/
+		System.out.println("myFavoriteBbsList 서비스 진입");
+		
+		String m_nick = (String) session.getAttribute("loginNick");
+		List<Integer> flist = null;
+		List<CategoryDto> clist = new ArrayList<CategoryDto>();
+		int success = 0;
+		
+		success = bDao.myFavoriteBbsListChk(m_nick);
+		
+		if(success != 0){
+			flist = bDao.myFavoriteBbsCIdx(m_nick);
+			for(int i =0;i<flist.size();i++){
+				System.out.println(flist.get(i));
+				clist.add(cDao.myFavoriteBbsCategory(flist.get(i)));
+			}
+			
+		}
+		
+		return clist;
+	}
+	
+	public List<SafeDealDto> myTradeList() {
+		List<SafeDealDto> tlist = null;
+		String m_nick = (String) session.getAttribute("loginNick");
+		String m_rating = (String) session.getAttribute("loginRating");
+		System.out.println(m_nick+" / "+m_rating);
+		
+		if(m_rating.equals("1")){
+			tlist = bDao.myTradeList1(m_nick);
+		}else if(m_rating.equals("9")){
+			tlist = bDao.myTradeList3();
+		}else{
+			tlist = bDao.myTradeList2(m_nick);
+		}
+		
+		return tlist;	
+	}
+	
+	public ModelAndView detailPopUp(SafeDealDto safedealdto) {
+		
+		System.out.println("detailPopUp() 진입");
+		mav = new ModelAndView();
+		String view = null;
+		
+		//bDao.addViews(bNum); 조회수 올리기
+		SafeDealDto sfddto = bDao.detailPopUp(safedealdto.getSfd_idx());
+		List<SafeDealDto> sfdInfolist = bDao.detailPopUpInfo(safedealdto.getSfd_idx());
+		
+		mav.addObject("sfdInfolist", sfdInfolist);
+		mav.addObject("sfddto", sfddto);
+		
+		view = "deal/dealDetail"; //.jsp
+			
+		mav.setViewName(view);
+		
+		return mav;
+	}
+	
+	public ModelAndView safeDealFormPopUp(SafeDealDto safedealdto) {
+		
+		System.out.println("safeDealFormPopUp() 진입");
+		mav = new ModelAndView();
+		String view = null;
+		
+		mav.addObject("safedealdto", safedealdto);
+		view = "deal/dealForm"; //.jsp
+			
+		mav.setViewName(view);
+		
+		return mav;
+	}
+
+	
+	//마이페이지 정보수정하기 (회원 리스트 수정)
+/*	public MemberDto update_mypage(MemberDto member){
+		
+		mDao.update_mypage(member);
+		
+		return mDao.login(member.getM_id());
+	}
+*/
+	
+	public ModelAndView dealModifyCall(SafeDealDto safedealdto) {
+			
+		mav = new ModelAndView();
+		int success=0;
+		success = bDao.dealModifyCall(safedealdto.getSfd_idx());
+		success+= bDao.dealModifyCallMsg(safedealdto);//success가 2일때 성공
+		
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+
+	public ModelAndView dealModifyStart(SafeDealDto safedealdto) {
+		System.out.println("dealModifyStart() 진입");
+		mav = new ModelAndView();
+		String view = null;
+		
+		//bDao.addViews(bNum); 조회수 올리기
+		SafeDealDto sfddto = bDao.detailPopUp(safedealdto.getSfd_idx());
+		List<SafeDealDto> sfdInfolist = bDao.detailPopUpInfo(safedealdto.getSfd_idx());
+		
+		mav.addObject("sfdInfolist", sfdInfolist);
+		mav.addObject("sfddto", sfddto);
+		
+		view = "deal/dealUpdateForm"; //.jsp
+			
+		mav.setViewName(view);
+		
+		return mav;
+	}
+
+	public ModelAndView dealUpdate(SafeDealDto safedealdto) {
+		System.out.println("dealUpdate() 진입");
+		mav = new ModelAndView();
+		String view = null;
+		int success1 = 3;
+		int success2 = 0;
+		
+		success1 = bDao.dealUpdate1(safedealdto);
+		
+		
+		for(int i =0;i<safedealdto.getList().size();i++){
+			System.out.println(safedealdto.getList().get(i).getSi_color());
+/*			Map<String, Object> simap = new HashMap<String, Object>();
+			
+			simap.put("si_idx", safedealdto.getList().get(i).getSi_idx());
+			simap.put("si_model", safedealdto.getList().get(i).getSi_model());
+			simap.put("si_size", safedealdto.getList().get(i).getSi_size());
+			simap.put("si_color", safedealdto.getList().get(i).getSi_color());
+			simap.put("si_amount", safedealdto.getList().get(i).getSi_amount());
+			simap.put("si_price", safedealdto.getList().get(i).getSi_price());
+			simap.put("si_note", safedealdto.getList().get(i).getSi_note());*/
+			
+			success2 += bDao.dealUpdate2(safedealdto.getList().get(i));
+			
+			System.out.println("success2 : "+success2);
+		}
+		
+		if(success1+success2>1){
+			success1=1;
+			mav.addObject("success1", success1);
+		}
+		
+		success1 += bDao.dealUpdateMsg(safedealdto);
+		
+		mav.addObject("success1", success1);
+		
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	//판매자가 수락
+	public ModelAndView dealAgree(SafeDealDto safedealdto) {
+		
+		mav = new ModelAndView();
+		
+		int success = bDao.dealAgree(safedealdto.getSfd_idx());
+		mav.addObject("success", success);
+		success += bDao.dealAgreeMsg1(safedealdto);//둘다 성공하면 success 가 2
+		success += bDao.dealAgreeMsg2(safedealdto);//둘다 성공하면 success 가 3
+		
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+
+	public ModelAndView dealCancel(SafeDealDto safedealdto) {
+		
+		mav = new ModelAndView();
+		
+		int success = bDao.dealCancel(safedealdto.getSfd_idx());
+		if(session.getAttribute("loginRating").equals("1")){
+			success += bDao.dealBuyCancelMsg1(safedealdto);
+			success += bDao.dealBuyCancelMsg2(safedealdto);
+		}else{
+			success += bDao.dealSellCancelMsg1(safedealdto);
+			success += bDao.dealSellCancelMsg2(safedealdto);
+		}
+
+		
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	public ModelAndView dealCancelAgreeSell(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		System.out.println("dealCancelAgreeSell 서비스 진입");
+		int success = bDao.dealCancelAgreeSell(safedealdto);
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+
+	public ModelAndView dealCancelAgreeAdmin(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		int success = bDao.dealCancelAgreeAdmin(safedealdto.getSfd_idx());
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	public ModelAndView payChk(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		
+		int success = bDao.payChk(safedealdto.getSfd_idx());
+		success += bDao.payChkMsg(safedealdto);
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	//소비자||구매자가 환불버튼 눌렀을시 서비스
+	public ModelAndView dealCancelRequest(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		
+		int success = bDao.dealCancelRequest(safedealdto.getSfd_idx());
+		if(session.getAttribute("loginRating").equals("1")){
+			success += bDao.dealCancelRequestMsg1(safedealdto);//둘다 성공하면 success 가 2
+			success += bDao.dealCancelRequestMsg2(safedealdto);//셋다 성공하면 success 가 3
+		}else{
+			success += bDao.dealCancelRequestMsg1(safedealdto);//둘다 성공하면 success 가 2
+		}
+		
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+
+	public ModelAndView dealConfirm(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		
+		int success = bDao.dealConfirm(safedealdto.getSfd_idx());
+		if(session.getAttribute("loginRating").equals("1")){
+			success += bDao.dealBuyConfirmMsg1(safedealdto);//둘다 성공하면 success 가 2
+			success += bDao.dealBuyConfirmMsg2(safedealdto);//셋다 성공하면 success 가 3
+		}else{
+			success += bDao.dealBuyConfirmMsg1(safedealdto);//둘다 성공하면 success 가 2
+		}
+		
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	public ModelAndView dealCancelCancel(SafeDealDto safedealdto) {
+		mav = new ModelAndView();
+		
+		int success = bDao.dealCancelCancel(safedealdto.getSfd_idx());
+		if(session.getAttribute("loginRating").equals("1")){
+			success += bDao.dealCancelBuyCancelMsg1(safedealdto);//둘다 성공하면 success 가 2
+			success += bDao.dealCancelBuyCancelMsg2(safedealdto);//셋다 성공하면 success 가 3
+		}else{
+			success += bDao.dealCancelAdminCancelMsg1(safedealdto);//둘다 성공하면 success 가 2
+			success += bDao.dealCancelAdminCancelMsg2(safedealdto);//셋다 성공하면 success 가 3
+		}
+		
+		mav.addObject("success", success);
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+	
+	public ModelAndView dealInsert(SafeDealDto safedealdto, CategoryDto categorydto) {
+		
+		mav = new ModelAndView();
+		
+		int success1 = 0;
+		int success2 = 0;
+		
+		System.out.println("categorydto.getC_num() : "+categorydto.getC_num());
+		System.out.println("categorydto.getC_idx() : "+categorydto.getC_idx());
+		
+		safedealdto.setSfd_mdgroup(cDao.getProduct(categorydto.getC_num()));
+		safedealdto.setSfd_product(cDao.getMdgroup(categorydto.getC_idx()));
+		safedealdto.setSfd_brand(cDao.getBrand(categorydto.getC_idx()));
+		
+		bDao.dealInsert(safedealdto);
+		
+		System.out.println("safedealdto.getList() : "+safedealdto.getList());
+		for(int i =0;i<safedealdto.getList().size();i++){
+			safedealdto.getList().get(i).setSfd_idx(safedealdto.getSfd_idx());
+			System.out.println("for(int i =0;i<safedealdto.getList().size();i++) 진입");
+			System.out.println("safedealdto : "+safedealdto.getList().get(i));
+			System.out.println("safedealdto.getList().get(i).getSi_note() : "+safedealdto.getList().get(i).getSi_note());
+			System.out.println("sfd_idx : "+safedealdto.getList().get(i).getSfd_idx());
+			if(safedealdto.getList().get(i).getSi_note() != ""){
+				success2 += bDao.dealInfoInsert1(safedealdto.getList().get(i));
+			}else{
+				success2 += bDao.dealInfoInsert2(safedealdto.getList().get(i));
+			}
+			
+		}
+		mav.setViewName("myPage/myEstimate");
+		
+		return mav;
+	}
+
+
+}

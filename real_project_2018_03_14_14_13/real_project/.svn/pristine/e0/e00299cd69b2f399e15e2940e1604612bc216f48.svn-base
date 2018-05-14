@@ -1,0 +1,119 @@
+package com.project.service;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dao.BoardDao;
+import com.project.dao.MemberDao;
+import com.project.dto.MemberDto;
+import com.project.dto.SafeDealDto;
+
+@Service
+public class MypageService {
+	
+	@Autowired
+	private BoardDao bDao;
+	@Autowired
+	private MemberDao mDao;	
+	@Autowired
+	HttpSession session;
+	@Autowired
+	HttpServletRequest request;
+	private ModelAndView mav;
+	
+	public List<Integer> myFavoriteBbsList() {
+		System.out.println("myFavoriteBbsList 서비스 진입");
+		
+		String m_nick = (String) session.getAttribute("loginNick");
+		List<Integer> flist = null;
+		int success = 0;
+		
+		success = bDao.myFavoriteBbsListChk(m_nick);
+		
+		if(success != 0){
+			System.out.println("if(success != 0){ 통과");
+			System.out.println("success : "+success);
+			flist = bDao.myFavoriteBbsList(m_nick);
+			System.out.println("flist.get(0) : "+flist.get(0));
+		}else{
+			System.out.println("if(success != 0){ 실패");
+			flist.add(success);
+			System.out.println("flist.get(0) : "+flist.get(0));
+		}
+		
+		return flist;
+	}
+	
+	public List<SafeDealDto> myTradeList() {
+		List<SafeDealDto> tlist = null;
+		String m_nick = (String) session.getAttribute("loginNick");
+		String m_rating = (String) session.getAttribute("loginRating");
+		System.out.println(m_nick+" / "+m_rating);
+		
+		if(m_rating.equals("1")){
+			tlist = bDao.myTradeList1(m_nick);
+		}else{
+			tlist = bDao.myTradeList2(m_nick);
+		}
+		
+		return tlist;
+	}
+	
+	public ModelAndView detailPopUp(SafeDealDto safedealdto) {
+		
+		System.out.println("detailPopUp() 진입");
+		mav = new ModelAndView();
+		String view = null;
+		
+		//bDao.addViews(bNum); 조회수 올리기
+		SafeDealDto sfddto = bDao.detailPopUp(safedealdto.getSfd_idx());
+		List<SafeDealDto> sfdInfolist = bDao.detailPopUpInfo(safedealdto.getSfd_idx());
+		
+		mav.addObject("sfdInfolist", sfdInfolist);
+		mav.addObject("sfddto", sfddto);
+		
+		view = "deal/dealDetail"; //.jsp
+			
+		mav.setViewName(view);
+		
+		return mav;
+	}
+
+	public ModelAndView myInfoPage1() {
+		
+		mav = new ModelAndView();
+		String m_nick = (String) session.getAttribute("loginNick");
+		
+		MemberDto member = mDao.myInfoPage1(m_nick);
+		mav.addObject("member", member);
+		
+		return mav;
+	}
+
+	public ModelAndView myInfoPage2() {
+		
+		mav = new ModelAndView();
+		String m_nick = (String) session.getAttribute("loginNick");
+		
+		MemberDto member = mDao.myInfoPage2(m_nick);
+		mav.addObject("member", member);
+		
+		return mav;
+	}
+
+	//마이페이지 정보수정하기 (회원 리스트 수정)
+/*	public MemberDto update_mypage(MemberDto member){
+		
+		mDao.update_mypage(member);
+		
+		return mDao.login(member.getM_id());
+	}
+*/
+
+}

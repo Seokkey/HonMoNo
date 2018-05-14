@@ -1,0 +1,42 @@
+package com.project.useClass;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+
+public class SessionInterceptor extends HandlerInterceptorAdapter{
+	@Autowired
+	private HttpSession session;
+	@Override
+	public boolean preHandle(HttpServletRequest request,
+			       HttpServletResponse response, Object handler)
+			throws Exception {
+		System.out.println("preHandle Call");
+		if(session.getAttribute("loginNick")==null){
+			
+			return false;
+		}
+		return true; //요청페이지로 이동
+	}
+	//loginRating 등급 0관리자,1일반,2사업,3사업승인대기
+	
+	/*@Override
+	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+		System.out.println("postHandle Call");
+		modelAndView=new ModelAndView();
+		modelAndView.addObject("result", "postHandleResult");
+		
+		// TODO Auto-generated method stub
+		super.postHandle(request, response, handler, modelAndView);
+	}*/
+
+	
+	
+
+}

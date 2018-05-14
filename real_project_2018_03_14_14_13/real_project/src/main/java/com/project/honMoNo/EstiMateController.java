@@ -1,0 +1,147 @@
+package com.project.honMoNo;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.project.dto.BoardDto;
+import com.project.dto.CategoryDto;
+import com.project.dto.ReplyDto;
+import com.project.service.EstiBoardService;
+
+@Controller
+public class EstiMateController {
+	
+	@Autowired
+	private EstiBoardService ebs;
+	
+	ModelAndView mav = null;
+	
+	/*//견적문의 이용안내 페이지 안 탈 수도있음
+	@RequestMapping(value = "/estipage", method = RequestMethod.GET)
+	public ModelAndView estipage() {		
+		
+		System.out.println("견적문의 이용안내 페이지");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("estimate/estimatePage");
+		mav.addObject("estiCategoList", ?)
+		mav.addObject("estiBrandList", ?)
+		
+		return mav;
+	}		
+	
+	//견적문의 리스트 요청
+	@RequestMapping(value = "/estiBoardList", method = RequestMethod.GET)
+	public ModelAndView estiBoardList() {		
+		
+		System.out.println("견적문의 리스트 요청");
+		ModelAndView mav = new ModelAndView();
+		mav=ebs.estiBoardList();
+		소분류 가져오기
+		
+		return mav;
+	}*/
+	
+	//견적문의 글쓰기폼 요청
+	@RequestMapping(value = "/estiWriteForm", method = RequestMethod.GET)
+	public ModelAndView estiWriteForm(CategoryDto categorydto) {		
+		System.out.println("견적문의 글쓰기폼 요청");
+		mav = new ModelAndView();
+		mav=ebs.estiWriteForm(categorydto);		
+		return mav;
+	}
+	
+	//견적문의 글 등록 요청	
+	@RequestMapping(value="/estiBoardWrite", method = RequestMethod.POST)
+	public ModelAndView estiBoardWrite(BoardDto boardDto, MultipartHttpServletRequest multi,CategoryDto categorydto){
+		mav = new ModelAndView();
+		System.out.println("견적문의 글 등록 요청");		
+		System.out.println("견적문의 글 작성 컨트롤러 파라메터들"+boardDto.getD_area());
+		System.out.println("견적문의 글 작성 컨트롤러 파라메터들"+boardDto.getEm_date());
+		System.out.println("견적문의 글 작성 컨트롤러 파라메터들"+boardDto.getEm_brand());
+		System.out.println("견적문의 글 작성 컨트롤러 파라메터들"+boardDto.getEm_product());
+		
+		
+		System.out.println(boardDto.getFilechk());
+		
+		mav=ebs.estiBoardWrite(boardDto,multi,categorydto);
+		System.out.println("mav 리턴까지 오는지?");
+		return mav;		
+	}
+		
+	//견적문의 수정폼 요청
+	@RequestMapping(value = "/estiUpdateForm", method = RequestMethod.GET)
+	public ModelAndView estiUpdateForm(CategoryDto categorydto, BoardDto boardDto) {		
+		System.out.println("견적문의 수정폼 요청");
+		mav = new ModelAndView();
+		mav=ebs.estiUpdateForm(categorydto, boardDto);		
+		return mav;
+	}
+	
+	//견적문의 수정 요청
+	@RequestMapping(value = "/estiBoardUpdate", method = RequestMethod.POST)
+	public ModelAndView estiBoardUpdate(CategoryDto categorydto, MultipartHttpServletRequest multi, BoardDto boardDto) {		
+		System.out.println("견적문의 수정폼 요청");
+		mav = new ModelAndView();
+		mav=ebs.estiBoardUpdate(categorydto, boardDto, multi);		
+		return mav;
+	}
+	
+		
+	//게시글 삭제 요청
+	@RequestMapping(value = "/estiBoardDelete", method = RequestMethod.GET)
+	public ModelAndView estiBoardDelete(BoardDto board, CategoryDto categorydto) {		
+		System.out.println("견적문의 삭제 요청");
+		mav = new ModelAndView();
+		mav=ebs.estiBoardDelete(board, categorydto);		
+		return mav;
+	}
+	
+	//견적문의 상세보기 요청
+	@RequestMapping(value = "/estiDetail", method = RequestMethod.GET)
+	public ModelAndView estiDetail(CategoryDto categorydto) {		
+		
+		System.out.println("견적문의 상세보기 요청");
+		System.out.println("상세보기 씨넘:"+categorydto.getC_num());
+		System.out.println("상세보기 씨idx:"+categorydto.getC_idx());
+		mav = new ModelAndView();
+		mav=ebs.estiDetail(categorydto);			
+		return mav;
+	}
+	
+	//견적문의 댓글 작성	
+	@RequestMapping(value = "/estiReplyWrite", produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<ReplyDto>> estiReplyWrite(ReplyDto reply) {
+		System.out.println("댓글 작성, 댓글 리스트 불러오기 요청");
+		Map<String,List<ReplyDto>> rMap=ebs.estiReplyWrite(reply);		
+		return rMap; //jackson이 Map을 json형태로 변환한다.
+	}
+	
+	//견적문의 댓글 삭제 요청
+	@RequestMapping(value = "/estiReplyDel", produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String,List<ReplyDto>> estiReplyDel(ReplyDto reply) {		
+		System.out.println("견적문의 댓글 삭제, 리스트 요청");			
+		Map<String,List<ReplyDto>> rMap = ebs.estiReplyDel(reply);
+		return rMap;
+	}
+	
+	//채택하기 요청		
+	@RequestMapping(value = "/estiChoose", produces = "application/json; charset=utf8")
+	public @ResponseBody Map<String, Object> estiChoose(BoardDto boardDto, CategoryDto categorydto) {		
+		System.out.println("채택하기");			
+		Map<String,Object> rMap = ebs.estiChoose(boardDto, categorydto);
+		System.out.println("리턴한 선택아이디"+rMap.get(boardDto.getEm_choosedid()));
+		return rMap;
+	}	
+	
+	
+}

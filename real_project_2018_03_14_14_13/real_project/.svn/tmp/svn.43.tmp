@@ -1,0 +1,17 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+	</head>
+	
+	<body>
+		<jsp:include page="../memberLoginBox.jsp"/>
+    	<jsp:include page="../mdgroupSideBar.jsp"/>
+		<%-- ${이용안내} --%>
+		게시판에 궁금한 제품 글 물어보면 판매자가 벌떼처럼 달려들어서 막 그냥
+		<a href="./estiBoardList">리스트 불러오기</a>
+	</body>
+</html>

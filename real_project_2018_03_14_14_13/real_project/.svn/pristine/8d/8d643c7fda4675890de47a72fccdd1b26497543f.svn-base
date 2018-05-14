@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.dao.BoardDao">
+
+ 	<select id="myFavoriteBbsList" parameterType="String" resultType="int">
+		SELECT * FROM favorite WHERE m_nick = #{m_nick}
+	</select> 
+	
+ 	<select id="myFavoriteBbsListChk" parameterType="String" resultType="int">
+		SELECT COUNT(c_idx) FROM favorite WHERE m_nick = #{m_nick}
+	</select> 	
+	
+	<select id="myTradeList1" parameterType="String" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_buyid = #{m_nick}
+	</select> 	
+	
+	<select id="myTradeList2" parameterType="String" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_sellid = #{m_nick}
+	</select>
+	
+	<select id="detailPopUp" parameterType="int" resultType="SafeDealDto">
+		SELECT * FROM safedeal WHERE sfd_idx = #{sfd_idx}
+	</select>	
+	
+	<select id="detailPopUpInfo" parameterType="int" resultType="SafeDealDto">
+		SELECT * FROM safedeal_info WHERE sfd_idx = #{sfd_idx}
+	</select>	
+	
+</mapper>
